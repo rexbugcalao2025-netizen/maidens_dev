@@ -5,10 +5,11 @@ const cors = require('cors');
 /*
     TODO: Add routes here
 */ 
+const userRoutes = require('./routes/user');
+
 
 require('dotenv').config();
 const hostOrigin = process.env.ORIGIN;
-const dbConnectionString = process.env.DB_CONNECTION;
 const port = process.env.PORT || 3000;
 
 
@@ -34,10 +35,14 @@ app.use(cors(corsOptions));
 /*
     Connect to Database
 */ 
-mongoose.connect(dbConnectionString, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-});
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log('MongoDB connected');
+  })
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  });
 
 mongoose.connection.once('open', () => {
     console.log(`Database connection is established.`);
@@ -52,6 +57,7 @@ mongoose.connection.on('error', err => {
     TO DO: app.use("/api/...", routes)
 
 */ 
+app.use('/users', userRoutes);
 
 
 /*
