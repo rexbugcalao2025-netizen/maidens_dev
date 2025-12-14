@@ -4,6 +4,11 @@ const router = express.Router();
 const userController = require('../controllers/user');
 const auth = require('../auth');
 
+const { addPhone, updatePhone, removePhone } = require('../controllers/user');
+const { verify } = require('../auth');
+
+
+
 /* ============================
    AUTH (PUBLIC)
 ============================ */
@@ -55,5 +60,14 @@ router.get('/', auth.verify, auth.verifyAdmin, userController.getUsers);
  * Soft delete user
  */
 router.delete('/:id', auth.verify, auth.verifyAdmin, userController.deleteUser);
+
+
+/**
+ * User Phones 
+ */
+router.post('/phones', verify, addPhone); // add a phone
+router.patch('/phones/:phoneId', verify, updatePhone); // update a phone
+router.delete('/phones/:phoneId', verify, removePhone); // remove a phone
+
 
 module.exports = router;

@@ -113,9 +113,8 @@ userSchema.virtual('full_name').get(function () {
 //
 // 🧹 SOFT DELETE QUERY FILTER
 //
-userSchema.pre(/^find/, function (next) {
+userSchema.pre(/^find/, function () {
   this.where({ is_deleted: false });
-  next();
 });
 
 //

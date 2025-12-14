@@ -295,3 +295,79 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ message: 'Failed to reset password' });
   }
 };
+
+
+/*
+  User add a phone information
+*/ 
+
+exports.addPhone = async (req, res) => {
+  try {
+    const { type, value } = req.body;
+    if (!type || !value) return res.status(400).json({ message: "Phone type and value are required" });
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.phones.push({ type, value });
+    await user.save();
+
+    res.json({ message: "Phone added successfully", phones: user.phones });
+  } catch (err) {
+    console.error("Add phone error:", err);
+    res.status(500).json({ message: "Failed to add phone" });
+  }
+};
+
+/*
+  User updates a phone information
+*/ 
+
+exports.updatePhone = async (req, res) => {
+  try {
+    const { phoneId } = req.params;
+    const { type, value } = req.body;
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const phone = user.phones.id(phoneId);
+    if (!phone) return res.status(404).json({ message: "Phone not found" });
+
+    if (type) phone.type = type;
+    if (value) phone.value = value;
+
+    await user.save();
+    res.json({ message: "Phone updated successfully", phones: user.phones });
+  } catch (err) {
+    console.error("Update phone error:", err);
+    res.status(500).json({ message: "Failed to update phone" });
+  }
+};
+
+
+/*
+  User removes a phone information
+*/ 
+exports.removePhone = async (req, res) => {
+  try {
+    const { phoneId } = req.params;
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const initialCount = user.phones.length;
+    user.phones = user.phones.filter(p => p._id.toString() !== phoneId);
+
+    if (user.phones.length === initialCount) {
+      return res.status(404).json({ message: "Phone not found" });
+    }
+
+    await user.save();
+
+    res.json({ message: "Phone removed successfully", phones: user.phones });
+  } catch (err) {
+    console.error("Remove phone error:", err);
+    res.status(500).json({ message: "Failed to remove phone" });
+  }
+};
