@@ -38,7 +38,7 @@ const clientSchema = new mongoose.Schema(
   {
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'User',
       required: true
     },
     date_created: {
@@ -65,9 +65,8 @@ const clientSchema = new mongoose.Schema(
 /**
  * Soft delete middleware
  */
-clientSchema.pre(/^find/, function (next) {
+clientSchema.pre(/^find/, function () {
   this.where({ is_deleted: false });
-  next();
 });
 
 module.exports = mongoose.model('Client', clientSchema);

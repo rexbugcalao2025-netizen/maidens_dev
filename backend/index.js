@@ -7,7 +7,7 @@ const cors = require('cors');
 */ 
 const userRoutes = require('./routes/user');
 const employeeRoutes = require('./routes/employee');
-
+const clientRoutes = require('./routes/client');
 
 require('dotenv').config();
 const hostOrigin = process.env.ORIGIN;
@@ -60,6 +60,7 @@ mongoose.connection.on('error', err => {
 */ 
 app.use('/users', userRoutes);
 app.use('/employees', employeeRoutes);
+app.use('/clients', clientRoutes);
 
 
 /*
