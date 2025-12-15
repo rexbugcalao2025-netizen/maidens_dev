@@ -6,6 +6,7 @@ const cors = require('cors');
     TODO: Add routes here
 */ 
 const userRoutes = require('./routes/user');
+const employeeRoutes = require('./routes/employee');
 
 
 require('dotenv').config();
@@ -58,6 +59,7 @@ mongoose.connection.on('error', err => {
 
 */ 
 app.use('/users', userRoutes);
+app.use('/employees', employeeRoutes);
 
 
 /*

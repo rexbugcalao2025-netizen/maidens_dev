@@ -1,0 +1,212 @@
+{
+  "info": {
+    "name": "Employees API",
+    "_postman_id": "b4e9f9b0-0000-0000-0000-000000000000",
+    "description": "Postman collection for Employees endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Employee",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{ADMIN_TOKEN}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": \"{{USER_ID}}\",\n  \"date_hired\": \"2025-01-01\",\n  \"tax_identification_number\": \"123-456-789\",\n  \"job_position\": [\n    {\n      \"title\": \"Software Engineer\",\n      \"entity\": \"Tech Corp\",\n      \"date_started\": \"2025-01-15\",\n      \"is_active\": true\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/employees",
+          "host": ["{{BASE_URL}}"],
+          "path": ["employees"]
+        }
+      }
+    },
+    {
+      "name": "Get All Employees",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{ADMIN_TOKEN}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/employees",
+          "host": ["{{BASE_URL}}"],
+          "path": ["employees"]
+        }
+      }
+    },
+    {
+      "name": "Get Employee By ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{ADMIN_TOKEN}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/employees/{{EMPLOYEE_ID}}",
+          "host": ["{{BASE_URL}}"],
+          "path": ["employees", "{{EMPLOYEE_ID}}"]
+        }
+      }
+    },
+    {
+      "name": "Get My Employee Profile",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{USER_TOKEN}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/employees/me/profile",
+          "host": ["{{BASE_URL}}"],
+          "path": ["employees","me","profile"]
+        }
+      }
+    },
+    {
+      "name": "Update Employee",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{ADMIN_TOKEN}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tax_identification_number\": \"987-654-321\",\n  \"date_retired\": \"2030-12-31\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/employees/{{EMPLOYEE_ID}}",
+          "host": ["{{BASE_URL}}"],
+          "path": ["employees", "{{EMPLOYEE_ID}}"]
+        }
+      }
+    },
+    {
+      "name": "Add Job Position",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{ADMIN_TOKEN}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Team Lead\",\n  \"entity\": \"Tech Corp\",\n  \"date_started\": \"2025-06-01\",\n  \"is_active\": true\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/employees/{{EMPLOYEE_ID}}/job-positions",
+          "host": ["{{BASE_URL}}"],
+          "path": ["employees", "{{EMPLOYEE_ID}}","job-positions"]
+        }
+      }
+    },
+    {
+      "name": "Update Job Position",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{ADMIN_TOKEN}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Senior Team Lead\",\n  \"is_active\": true\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/employees/{{EMPLOYEE_ID}}/job-positions/{{POSITION_ID}}",
+          "host": ["{{BASE_URL}}"],
+          "path": ["employees", "{{EMPLOYEE_ID}}","job-positions","{{POSITION_ID}}"]
+        }
+      }
+    },
+    {
+      "name": "End Job Position",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{ADMIN_TOKEN}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"date_ended\": \"2025-12-31\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/employees/{{EMPLOYEE_ID}}/job-positions/{{POSITION_ID}}/end",
+          "host": ["{{BASE_URL}}"],
+          "path": ["employees", "{{EMPLOYEE_ID}}","job-positions","{{POSITION_ID}}","end"]
+        }
+      }
+    },
+    {
+      "name": "Remove Job Position",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{ADMIN_TOKEN}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/employees/{{EMPLOYEE_ID}}/job-positions/{{POSITION_ID}}",
+          "host": ["{{BASE_URL}}"],
+          "path": ["employees", "{{EMPLOYEE_ID}}","job-positions","{{POSITION_ID}}"]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "info": {
+    "name": "Clients API",
+    "_postman_id": "c0ffee12-abcd-1234-5678-90abcdef1234",
+    "description": "Postman collection for Clients API with occupation sub-document endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Client",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": \"{{USER_ID}}\",\n  \"notes\": \"Initial client notes\",\n  \"occupation\": [\n    {\n      \"position\": \"Manager\",\n      \"company_name\": \"Acme Corp\",\n      \"address\": \"123 Main St\",\n      \"year_joined\": \"2020\",\n      \"is_active\": true\n    }\n  ]\n}"
+        },
+        "url": { "raw": "{{BASE_URL}}/clients", "host": ["{{BASE_URL}}"], "path": ["clients"] }
+      }
+    },
+    {
+      "name": "Get All Clients",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+        ],
+        "url": { "raw": "{{BASE_URL}}/clients", "host": ["{{BASE_URL}}"], "path": ["clients"] }
+      }
+    },
+    {
+      "name": "Get Client By ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+        ],
+        "url": { "raw": "{{BASE_URL}}/clients/{{CLIENT_ID}}", "host": ["{{BASE_URL}}"], "path": ["clients", "{{CLIENT_ID}}"] }
+      }
+    },
+    {
+      "name": "Update Client",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"notes\": \"Updated client notes\"\n}"
+        },
+        "url": { "raw": "{{BASE_URL}}/clients/{{CLIENT_ID}}", "host": ["{{BASE_URL}}"], "path": ["clients", "{{CLIENT_ID}}"] }
+      }
+    },
+    {
+      "name": "Soft Delete Client",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+        ],
+        "url": { "raw": "{{BASE_URL}}/clients/{{CLIENT_ID}}", "host": ["{{BASE_URL}}"], "path": ["clients", "{{CLIENT_ID}}"] }
+      }
+    },
+    {
+      "name": "Add Occupation",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"position\": \"Developer\",\n  \"company_name\": \"Tech Ltd\",\n  \"address\": \"456 Tech Park\",\n  \"year_joined\": \"2022\",\n  \"is_active\": true\n}"
+        },
+        "url": { "raw": "{{BASE_URL}}/clients/{{CLIENT_ID}}/occupation", "host": ["{{BASE_URL}}"], "path": ["clients", "{{CLIENT_ID}}", "occupation"] }
+      }
+    },
+    {
+      "name": "Update Occupation",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"position\": \"Senior Developer\",\n  \"is_active\": false\n}"
+        },
+        "url": { "raw": "{{BASE_URL}}/clients/{{CLIENT_ID}}/occupation/{{OCC_ID}}", "host": ["{{BASE_URL}}"], "path": ["clients", "{{CLIENT_ID}}", "occupation", "{{OCC_ID}}"] }
+      }
+    },
+    {
+      "name": "Remove Occupation",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+        ],
+        "url": { "raw": "{{BASE_URL}}/clients/{{CLIENT_ID}}/occupation/{{OCC_ID}}", "host": ["{{BASE_URL}}"], "path": ["clients", "{{CLIENT_ID}}", "occupation", "{{OCC_ID}}"] }
+      }
+    }
+  ]
+}
