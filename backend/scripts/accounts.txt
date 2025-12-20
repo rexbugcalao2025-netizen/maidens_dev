@@ -1,0 +1,38 @@
+Admin
+sys@example.com / system123!
+
+Clients
+Marianne@example.com / marianne123
+user_id: 6940183f1c6356c359b0987b
+client_id: 694019c695fae627ccdf85c5
+
+mj@example.com / michael123 
+user_id: 694136118f84e2e4febeab5d
+client_id: 694136f18f84e2e4febeab61
+
+hulkster@example.com / hulk123
+user_id: 694139558f84e2e4febeab7b
+client_id: 694139c78f84e2e4febeab7f
+
+
+EMPLOYEE
+
+peter@example.com / spiderman
+user_id: 69423f0b6dd50b18125fe5db
+employee_id: 69423ff96dd50b18125fe5e3
+credential_id: 69426e4ad69f926885432420, 693e8e68f7c9af2a9b921d46
+
+
+CATEGORIES
+Farming / 694653d618444fa8f69c5999
+Electronics / 694653de18444fa8f69c599c
+Beauty / 694653e518444fa8f69c599f
+Health and Wellness / 694653ed18444fa8f69c59a2
+Fashion / 694653f518444fa8f69c59a5
+
+
+
+
+http://localhost:4000
+
+

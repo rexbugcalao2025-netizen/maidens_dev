@@ -245,3 +245,132 @@ exports.removeJobPosition = async (req, res) => {
     res.status(500).json({ message: 'Failed to remove job position' });
   }
 };
+
+/**
+ * ADD EMPLOYEE CREDENTIAL (ADMIN)
+ */
+exports.addCredential = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const {
+      credential_type,
+      value,
+      acquire_on_date,
+      expire_on_date
+    } = req.body;
+
+    if (!credential_type || !value || !acquire_on_date) {
+      return res.status(400).json({
+        message: 'credential_type, value, and acquire_on_date are required'
+      });
+    }
+
+    const employee = await Employee.findById(employeeId);
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    employee.credentials.push({
+      credential_type,
+      value,
+      acquire_on_date,
+      expire_on_date
+    });
+
+    await employee.save();
+
+    res.status(201).json({
+      message: 'Credential added successfully',
+      credentials: employee.credentials
+    });
+  } catch (err) {
+    console.error('AddCredential error:', err);
+    res.status(500).json({ message: 'Failed to add credential' });
+  }
+};
+
+/**
+ * UPDATE EMPLOYEE CREDENTIAL (ADMIN)
+ */
+exports.updateCredential = async (req, res) => {
+  try {
+    const { employeeId, credentialId } = req.params;
+    const updates = req.body;
+
+    const employee = await Employee.findById(employeeId);
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    const credential = employee.credentials.id(credentialId);
+    if (!credential) {
+      return res.status(404).json({ message: 'Credential not found' });
+    }
+
+    Object.assign(credential, updates);
+
+    await employee.save();
+
+    res.json({
+      message: 'Credential updated successfully',
+      credential
+    });
+  } catch (err) {
+    console.error('UpdateCredential error:', err);
+    res.status(500).json({ message: 'Failed to update credential' });
+  }
+};
+
+/**
+ * REMOVE EMPLOYEE CREDENTIAL (ADMIN)
+ */
+exports.removeCredential = async (req, res) => {
+  try {
+    const { employeeId, credentialId } = req.params;
+
+    const employee = await Employee.findById(employeeId);
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    // Remove the credential by filtering the array
+    employee.credentials = employee.credentials.filter(
+      (cred) => cred._id.toString() !== credentialId
+    );
+
+    await employee.save();
+
+    res.json({
+      message: 'Credential removed successfully'
+    });
+  } catch (err) {
+    console.error('RemoveCredential error:', err);
+    res.status(500).json({ message: 'Failed to remove credential' });
+  }
+};
+
+/**
+ * GET EMPLOYEE CREDENTIALS (ADMIN)
+ */
+exports.getCredentials = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+
+    const employee = await Employee.findById(employeeId);
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    // Auto-deactivate expired credentials
+    employee.deactivateExpiredCredentials();
+    await employee.save();
+
+    res.json(employee.credentials);
+  } catch (err) {
+    console.error('GetCredentials error:', err);
+    res.status(500).json({ message: 'Failed to fetch credentials' });
+  }
+};
+
+
+

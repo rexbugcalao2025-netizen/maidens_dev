@@ -38,6 +38,47 @@ const jobPositionSchema = new mongoose.Schema(
   }
 );
 
+/**
+ * Credential sub-schema
+ */
+const credentialSchema = new mongoose.Schema(
+  {
+    credential_type: {
+      type: String,
+      enum: [
+          'drivers_license',
+          'prc_license',
+          'tesda_certificate',
+          'training_certificate',
+          'other'
+        ],
+      required: true,
+      trim: true
+    },
+
+    value: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    acquire_on_date: {
+      type: Date,
+      required: true
+    },
+
+    expire_on_date: {
+      type: Date
+    },
+
+    is_active: {
+      type: Boolean,
+      default: true
+    }
+  },
+  { _id: true }
+);
+
 
 /**
  * Employee schema
@@ -68,12 +109,35 @@ const employeeSchema = new mongoose.Schema(
       unique: true
     },
 
-    job_position: [jobPositionSchema]
+    job_position: [jobPositionSchema],    
+    credentials: [credentialSchema]
   },
   {
     collection: 'employees',
     timestamps: true
   }
 );
+
+/**
+ * Index for credential expiration queries
+ */
+employeeSchema.index(
+  { 'credentials.expire_on_date': 1 },
+  { partialFilterExpression: { 'credentials.expire_on_date': { $exists: true } } }
+);
+
+/**
+ * Instance method: deactivate expired credentials
+ */
+employeeSchema.methods.deactivateExpiredCredentials = function () {
+  const now = new Date();
+
+  this.credentials.forEach((cred) => {
+    if (cred.expire_on_date && cred.expire_on_date < now) {
+      cred.is_active = false;
+    }
+  });
+};
+
 
 module.exports = mongoose.model('Employee', employeeSchema);

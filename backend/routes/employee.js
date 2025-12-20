@@ -42,4 +42,44 @@ router.patch('/:id/job-positions/:positionId/end', verify, verifyAdmin, employee
 // Remove job position (hard delete, Admin only)
 router.delete('/:id/job-positions/:positionId', verify, verifyAdmin, employeeController.removeJobPosition);
 
+
+/**
+ * ============================
+ * USER CREDENTIALS
+ * ============================
+ */
+const {
+  addCredential,
+  updateCredential,
+  removeCredential,
+  getCredentials
+} = require('../controllers/employee');
+
+router.post(
+  '/:employeeId/credentials',
+  verify,
+  verifyAdmin,
+  addCredential
+);
+
+router.put(
+  '/:employeeId/credentials/:credentialId',
+  verify,
+  verifyAdmin,
+  updateCredential
+);
+
+router.delete(
+  '/:employeeId/credentials/:credentialId',
+  verify,
+  verifyAdmin,
+  removeCredential
+);
+
+router.get(
+  '/:employeeId/credentials',
+  verify,
+  getCredentials
+);
+
 module.exports = router;

@@ -8,6 +8,11 @@ const cors = require('cors');
 const userRoutes = require('./routes/user');
 const employeeRoutes = require('./routes/employee');
 const clientRoutes = require('./routes/client');
+const productRoutes = require('./routes/product');
+const productCategoryRoutes = require('./routes/productCategory');
+const cartRoutes = require ('./routes/cart');
+const orderRoutes = require('./routes/order');
+
 
 require('dotenv').config();
 const hostOrigin = process.env.ORIGIN;
@@ -56,11 +61,14 @@ mongoose.connection.on('error', err => {
 
 /*
     TO DO: app.use("/api/...", routes)
-
 */ 
 app.use('/users', userRoutes);
 app.use('/employees', employeeRoutes);
 app.use('/clients', clientRoutes);
+app.use('/products', productRoutes);
+app.use('/productCategory', productCategoryRoutes);
+app.use('/cart', cartRoutes);
+app.use('/orders', orderRoutes);
 
 
 /*
