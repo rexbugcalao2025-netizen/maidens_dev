@@ -1,0 +1,173 @@
+{
+  "info": {
+    "_postman_id": "b1f7c4d2-9f44-4c1a-8b21-2c8a5e6f1234",
+    "name": "Client Services API",
+    "description": "Client service history, payments, status updates, and voiding",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:4000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "YOUR_JWT_TOKEN_HERE",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Create Client Service",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/client-services",
+          "host": ["{{base_url}}"],
+          "path": ["client-services"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"client_id\": \"66c9f0f2b7f0c8a1c1234567\",\n  \"date_rendered\": \"2025-01-15T09:00:00.000Z\",\n  \"service_rendered\": [\n    {\n      \"service_id\": \"66c9f101b7f0c8a1c7654321\",\n      \"amount\": 1200,\n      \"person_assigned\": [\n        {\n          \"employee_id\": \"66c9f130b7f0c8a1c1111111\",\n          \"percentage_commission\": 40\n        }\n      ],\n      \"notes\": \"Premium facial with extra care\"\n    }\n  ],\n  \"discount_amount\": 100,\n  \"payment\": [\n    {\n      \"type_of_payment\": \"cash\",\n      \"amount\": 500,\n      \"reference_number\": \"OR-10001\",\n      \"date_paid\": \"2025-01-15T10:00:00.000Z\"\n    }\n  ],\n  \"reference_code\": \"CS-2025-0001\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Add Payment",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/client-services/:clientServiceId/payment",
+          "host": ["{{base_url}}"],
+          "path": ["client-services", ":clientServiceId", "payment"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type_of_payment\": \"gcash\",\n  \"amount\": 1400,\n  \"reference_number\": \"GCASH-998877\",\n  \"date_paid\": \"2025-01-15T11:30:00.000Z\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Update Service Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/client-services/:clientServiceId/status",
+          "host": ["{{base_url}}"],
+          "path": ["client-services", ":clientServiceId", "status"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"completed\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Get Client Service History",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/client-services/client/:clientId",
+          "host": ["{{base_url}}"],
+          "path": ["client-services", "client", ":clientId"]
+        }
+      }
+    },
+    {
+      "name": "Get Single Client Service",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/client-services/:clientServiceId",
+          "host": ["{{base_url}}"],
+          "path": ["client-services", ":clientServiceId"]
+        }
+      }
+    },
+    {
+      "name": "Get All Client Services (Admin)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/client-services/admin/all",
+          "host": ["{{base_url}}"],
+          "path": ["client-services", "admin", "all"]
+        }
+      }
+    },
+    {
+      "name": "Void Client Service (Admin)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/client-services/:clientServiceId/void",
+          "host": ["{{base_url}}"],
+          "path": ["client-services", ":clientServiceId", "void"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"void_reason\": \"Incorrect service entry\"\n}"
+        }
+      }
+    }
+  ]
+}

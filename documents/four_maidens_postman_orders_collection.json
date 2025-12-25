@@ -1,0 +1,122 @@
+{
+  "info": {
+    "_postman_id": "orders-api-collection",
+    "name": "Orders API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Order management endpoints (user + admin)"
+  },
+  "item": [
+    {
+      "name": "User - Get My Orders",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/orders/my",
+          "host": ["{{baseUrl}}"],
+          "path": ["orders", "my"]
+        }
+      }
+    },
+    {
+      "name": "User - Get Order By ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/orders/{{orderId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["orders", "{{orderId}}"]
+        }
+      }
+    },
+    {
+      "name": "Admin - Get All Orders",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["orders"]
+        }
+      }
+    },
+    {
+      "name": "Admin - Update Order Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"processing\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/orders/{{orderId}}/status",
+          "host": ["{{baseUrl}}"],
+          "path": ["orders", "{{orderId}}", "status"]
+        }
+      }
+    },
+    {
+      "name": "Admin - Add Payment to Order",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type_of_payment\": \"cash\",\n  \"amount\": 500,\n  \"reference_number\": \"OR-123456\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/orders/{{orderId}}/payment",
+          "host": ["{{baseUrl}}"],
+          "path": ["orders", "{{orderId}}", "payment"]
+        }
+      }
+    },
+    {
+      "name": "Admin - Soft Delete Order",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/orders/{{orderId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["orders", "{{orderId}}"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "orderId",
+      "value": ""
+    }
+  ]
+}

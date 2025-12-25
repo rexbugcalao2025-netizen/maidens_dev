@@ -1,0 +1,100 @@
+{
+  "info": {
+    "_postman_id": "productcategory-collection",
+    "name": "ProductCategory API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Category",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Electronics\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/productCategory", "host": ["{{baseUrl}}"], "path": ["productCategory"] }
+      }
+    },
+    {
+      "name": "Get All Categories",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/productCategory", "host": ["{{baseUrl}}"], "path": ["productCategory"] }
+      }
+    },
+    {
+      "name": "Get Single Category",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/productCategory/{{categoryId}}", "host": ["{{baseUrl}}"], "path": ["productCategory", "{{categoryId}}"] }
+      }
+    },
+    {
+      "name": "Update Category",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"New Electronics\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/productCategory/{{categoryId}}", "host": ["{{baseUrl}}"], "path": ["productCategory", "{{categoryId}}"] }
+      }
+    },
+    {
+      "name": "Delete Category",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/productCategory/{{categoryId}}", "host": ["{{baseUrl}}"], "path": ["productCategory", "{{categoryId}}"] }
+      }
+    },
+    {
+      "name": "Add Sub-Category",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Smartphones\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/productCategory/{{categoryId}}/sub", "host": ["{{baseUrl}}"], "path": ["productCategory", "{{categoryId}}", "sub"] }
+      }
+    },
+    {
+      "name": "Remove Sub-Category",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/productCategory/{{categoryId}}/sub/{{subId}}", "host": ["{{baseUrl}}"], "path": ["productCategory", "{{categoryId}}", "sub", "{{subId}}"] }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "categoryId", "value": "" },
+    { "key": "subId", "value": "" }
+  ]
+}

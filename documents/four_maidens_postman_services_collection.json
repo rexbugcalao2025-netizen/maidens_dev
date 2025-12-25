@@ -1,0 +1,128 @@
+{
+  "info": {
+    "_postman_id": "9e8f2c71-6c0d-4f9a-8a3a-1f2b3c4d5678",
+    "name": "Services API",
+    "description": "Service catalog management (create, update, archive, retrieve services)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:4000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "YOUR_ADMIN_JWT_TOKEN_HERE",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Create Service (Admin)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/services",
+          "host": ["{{base_url}}"],
+          "path": ["services"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Premium Facial\",\n  \"description\": \"Deep cleansing facial with premium products\",\n  \"category\": \"beauty\",\n  \"duration_in_minutes\": 60,\n  \"labor_price\": 1500,\n  \"materials\": [\n    {\n      \"product_id\": \"66c9f201b7f0c8a1caaaaaaa\",\n      \"quantity\": 1,\n      \"price\": 300\n    },\n    {\n      \"product_id\": \"66c9f202b7f0c8a1cbbbbbbb\",\n      \"quantity\": 2,\n      \"price\": 150\n    }\n  ],\n  \"date_offered\": \"2025-01-01T00:00:00.000Z\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Get All Active Services (Public)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/services",
+          "host": ["{{base_url}}"],
+          "path": ["services"]
+        }
+      }
+    },
+    {
+      "name": "Get Single Service",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/services/:serviceId",
+          "host": ["{{base_url}}"],
+          "path": ["services", ":serviceId"]
+        }
+      }
+    },
+    {
+      "name": "Update Service (Admin)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/services/:serviceId",
+          "host": ["{{base_url}}"],
+          "path": ["services", ":serviceId"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"Updated premium facial with improved treatment\",\n  \"labor_price\": 1700,\n  \"duration_in_minutes\": 75\n}"
+        }
+      }
+    },
+    {
+      "name": "Archive Service (Admin)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/services/:serviceId/archive",
+          "host": ["{{base_url}}"],
+          "path": ["services", ":serviceId", "archive"]
+        }
+      }
+    },
+    {
+      "name": "Get All Services (Admin)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/services/admin/all",
+          "host": ["{{base_url}}"],
+          "path": ["services", "admin", "all"]
+        }
+      }
+    }
+  ]
+}

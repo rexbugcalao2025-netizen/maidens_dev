@@ -56,6 +56,9 @@ router.put('/me', auth.verify, userController.updateMe);
  */
 router.get('/', auth.verify, auth.verifyAdmin, userController.getUsers);
 
+// ✅ Get user by ID (admin)
+router.get('/:id', auth.verify, auth.verifyAdmin, userController.getUserById);
+
 /**
  * Soft delete user
  */

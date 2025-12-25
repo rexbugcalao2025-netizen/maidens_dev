@@ -69,7 +69,7 @@ const orderSchema = new mongoose.Schema(
   {
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'User',
       required: true,
       index: true
     },

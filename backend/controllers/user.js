@@ -14,19 +14,10 @@ const SALT_ROUNDS = 10;
  */
 exports.register = async (req, res) => {
   try {
-    const {
-      first_name,
-      last_name,
-      email,
-      password,
-      phones,
-      address,
-      date_of_birth,
-      gender
-    } = req.body;
+    const { email, password } = req.body;
 
-    if (!email || !password || !first_name || !last_name) {
-      return res.status(400).json({ message: 'Required fields missing' });
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
     }
 
     const existingUser = await User.findOne({ email });
@@ -34,23 +25,17 @@ exports.register = async (req, res) => {
       return res.status(409).json({ message: 'Email already exists' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
-      first_name,
-      last_name,
       email,
-      password: hashedPassword,
-      phones,
-      address,
-      date_of_birth,
-      gender
+      password: hashedPassword
     });
 
     const accessToken = createAccessToken(user);
 
     res.status(201).json({
-      message: 'User registered successfully',
+      message: 'Registration successful',
       user,
       accessToken
     });
@@ -59,6 +44,7 @@ exports.register = async (req, res) => {
     res.status(500).json({ message: 'Registration failed' });
   }
 };
+
 
 /**
  * LOGIN USER
@@ -123,46 +109,62 @@ exports.getMe = async (req, res) => {
  */
 exports.updateMe = async (req, res) => {
   try {
-    const allowedFields = [
-      'first_name',
-      'last_name',
-      'phones',
-      'address',
-      'date_of_birth',
-      'gender',
-      'password'
-    ];
 
-    const updates = {};
-    for (const field of allowedFields) {
-      if (req.body[field] !== undefined) {
-        updates[field] = req.body[field];
-      }
-    }
+    console.log('UPDATE ME START');
 
-    if (updates.password) {
-      updates.password = await bcrypt.hash(updates.password, SALT_ROUNDS);
-    }
+    const user = await User.findOne({
+      _id: req.user.id,
+      is_deleted: false
+    });
 
-    const user = await User.findOneAndUpdate(
-      { _id: req.user.id, is_deleted: false },
-      updates,
-      { new: true, runValidators: true }
-    );
+    console.log('USER FOUND');
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+
+    console.log('PHONES RECEIVED:', req.body.phones);
+
+
+    // Scalar fields
+    if (req.body.first_name !== undefined) user.first_name = req.body.first_name;
+    if (req.body.last_name !== undefined) user.last_name = req.body.last_name;
+    if (req.body.address !== undefined) user.address = req.body.address;
+    if (req.body.gender !== undefined) user.gender = req.body.gender;
+    if (req.body.date_of_birth !== undefined) user.date_of_birth = req.body.date_of_birth;
+
+    console.log('FIELDS ASSIGNED');
+
+    // Password
+    if (typeof req.body.password === 'string' && req.body.password.trim() !== '') {
+      console.log('PHONES ASSIGN START', req.body.phones);
+      user.password = await bcrypt.hash(req.body.password, SALT_ROUNDS);
+      console.log('PASSWORD HASHED');
+    }   
+    
+    // 🔥 THIS FIXES PHONE REMOVAL
+    if (Array.isArray(req.body.phones)) {
+      user.phones = req.body.phones;
+    }
+    
+    console.log('About to save user...');
+    await user.save();
+    console.log('User saved successfully');
 
     res.json({
       message: 'Profile updated',
       user
     });
   } catch (err) {
-    console.error('UpdateMe error:', err);
-    res.status(500).json({ message: 'Failed to update profile' });
-  }
+      console.error('UpdateMe validation error:', err);
+      return res.status(400).json({
+        message: err.message,
+        errors: err.errors
+    });
+  };
 };
+
+
 
 /* ============================
    ADMIN
@@ -178,6 +180,24 @@ exports.getUsers = async (req, res) => {
   } catch (err) {
     console.error('GetUsers error:', err);
     res.status(500).json({ message: 'Failed to fetch users' });
+  }
+};
+
+/**
+ * ADMIN: Get user by ID
+ */
+exports.getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user || user.is_deleted) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json(user);
+  } catch (err) {
+    console.error('GetUserById error:', err);
+    res.status(500).json({ message: 'Failed to load user' });
   }
 };
 

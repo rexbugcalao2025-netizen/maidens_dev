@@ -12,6 +12,8 @@ const productRoutes = require('./routes/product');
 const productCategoryRoutes = require('./routes/productCategory');
 const cartRoutes = require ('./routes/cart');
 const orderRoutes = require('./routes/order');
+const serviceRoutes = require('./routes/service');
+const clientServiceRoutes = require('./routes/clientService');
 
 
 require('dotenv').config();
@@ -66,9 +68,11 @@ app.use('/users', userRoutes);
 app.use('/employees', employeeRoutes);
 app.use('/clients', clientRoutes);
 app.use('/products', productRoutes);
-app.use('/productCategory', productCategoryRoutes);
-app.use('/cart', cartRoutes);
+app.use('/product-categories', productCategoryRoutes);
+app.use('/carts', cartRoutes);
 app.use('/orders', orderRoutes);
+app.use('/services', serviceRoutes);
+app.use('/client-services',clientServiceRoutes);
 
 
 /*

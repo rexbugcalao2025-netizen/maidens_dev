@@ -21,7 +21,7 @@ const phoneSchema = new mongoose.Schema(
         message: 'Invalid phone number'
       }
     }
-  },
+  },  
   { _id: true }
 );
 
@@ -32,13 +32,13 @@ const userSchema = new mongoose.Schema(
   {
     first_name: {
       type: String,
-      required: true,
+      default:'',
       trim: true
     },
 
     last_name: {
       type: String,
-      required: true,
+      default:'',
       trim: true
     },
 
@@ -109,6 +109,11 @@ const userSchema = new mongoose.Schema(
 userSchema.virtual('full_name').get(function () {
   return `${this.first_name} ${this.last_name}`;
 });
+
+userSchema.virtual('is_profile_complete').get(function () {
+  return !!(this.first_name && this.last_name);
+});
+
 
 //
 // 🧹 SOFT DELETE QUERY FILTER

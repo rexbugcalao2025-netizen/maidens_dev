@@ -1,0 +1,128 @@
+{
+  "info": {
+    "_postman_id": "cart-api-collection",
+    "name": "Cart API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get My Cart",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cart",
+          "host": ["{{baseUrl}}"],
+          "path": ["cart"]
+        }
+      }
+    },
+    {
+      "name": "Add Item to Cart",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"product_id\": \"{{productId}}\",\n  \"quantity\": 2\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/cart/items",
+          "host": ["{{baseUrl}}"],
+          "path": ["cart", "items"]
+        }
+      }
+    },
+    {
+      "name": "Update Cart Item Quantity",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"quantity\": 5\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/cart/items/{{itemId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["cart", "items", "{{itemId}}"]
+        }
+      }
+    },
+    {
+      "name": "Remove Item from Cart",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cart/items/{{itemId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["cart", "items", "{{itemId}}"]
+        }
+      }
+    },
+    {
+      "name": "Checkout Cart (Create Order)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/cart/checkout",
+          "host": ["{{baseUrl}}"],
+          "path": ["cart", "checkout"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "productId",
+      "value": ""
+    },
+    {
+      "key": "itemId",
+      "value": ""
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "info": {
+    "_postman_id": "product-api-collection",
+    "name": "Products API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get All Products",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:4000/products",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "4000",
+          "path": ["products"]
+        }
+      }
+    },
+    {
+      "name": "Create Product",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Product A\",\n  \"description\": \"Sample product\",\n  \"price\": 100,\n  \"category\": \"{{categoryId}}\",\n  \"sub_category\": \"{{subCategoryId}}\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:4000/products",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "4000",
+          "path": ["products"]
+        }
+      }
+    },
+    {
+      "name": "Update Product",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"price\": 120,\n  \"name\": \"Product A Updated\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:4000/products/{{productId}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "4000",
+          "path": ["products", "{{productId}}"]
+        }
+      }
+    },
+    {
+      "name": "Add Product Images",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"images\": [\n    \"https://example.com/image1.jpg\",\n    \"https://example.com/image2.jpg\"\n  ]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:4000/products/{{productId}}/images",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "4000",
+          "path": ["products", "{{productId}}", "images"]
+        }
+      }
+    },
+    {
+      "name": "Delete Product",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:4000/products/{{productId}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "4000",
+          "path": ["products", "{{productId}}"]
+        }
+      }
+    }
+  ]
+}
