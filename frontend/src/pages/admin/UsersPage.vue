@@ -55,7 +55,10 @@ const filteredUsers = computed(() => {
     )
   }
 
-  return result
+  // 🕒 Sort by createdAt (newest first)
+  return result.sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+  )
 })
 
 // 📡 Fetch users
@@ -94,49 +97,68 @@ onMounted(async () => {
       </div>
 
       <!-- RIGHT: Filters -->
-      <div class="d-flex gap-2 align-items-center pt-3">
+      <div class="d-flex gap-2 align-items-start pt-3">
 
-        <!-- From Date -->
-        <span>Search Filter</span>
+        <!-- Date Filters -->
+        <span class="pt-1">Search Filter</span>
+
         <input
           v-model="fromDate"
           type="date"
           class="form-control form-control-sm"
-          title="From date"
           style="width: 200px"
+          title="From date"
         />
 
-        <!-- To Date -->
         <input
           v-model="toDate"
           type="date"
           class="form-control form-control-sm"
-          title="To date"
           style="width: 200px"
+          title="To date"
         />
 
         <button
           class="btn btn-sm btn-outline-secondary"
           @click="fromDate = ''; toDate = ''; search = ''"
-          >
+        >
           Clear
         </button>
 
-        <!-- Search -->
-        <div class="input-group input-group-sm" style="width: 400px;">
-          <span class="input-group-text">
-            <i class="bi bi-search"></i>
-          </span>
-          <input
-            v-model="search"
-            type="text"
-            class="form-control"
-            placeholder="Search users..."
-          />
+        <!-- SEARCH + PAGE SIZE (STACKED) -->
+        <div class="d-flex flex-column align-items-end gap-1">
+
+          <!-- Search -->
+          <div class="input-group input-group-sm" style="width: 400px;">
+            <span class="input-group-text">
+              <i class="bi bi-search"></i>
+            </span>
+            <input
+              v-model="search"
+              type="text"
+              class="form-control"
+              placeholder="Search users..."
+            />
+          </div>
+
+          <!-- Page Size -->
+          <div class="d-flex align-items-center gap-1">
+            <span class="text-muted small">Rows</span>
+            <select
+              v-model.number="pageSize"
+              class="form-select form-select-sm"
+              style="width: 80px"
+            >
+              <option :value="10">10</option>
+              <option :value="15">15</option>
+              <option :value="20">20</option>
+            </select>
+          </div>
+
         </div>
 
       </div>
-    </div>
+    </div>  
 
     <!-- LOADING -->
     <div v-if="loading" class="text-muted">
@@ -182,7 +204,7 @@ onMounted(async () => {
               <td>
                 <span
                   class="badge"
-                  :class="user.is_admin ? 'bg-danger' : 'bg-secondary'"
+                  :class="user.is_admin ? 'badge-plum' : 'badge-dusty'"
                 >
                   {{ user.is_admin ? 'Admin' : 'User' }}
                 </span>
@@ -193,8 +215,7 @@ onMounted(async () => {
                 <span
                   class="badge"
                   :class="user.is_profile_complete
-                    ? 'bg-success'
-                    : 'bg-warning text-dark'"
+                    ? 'badge-rose' : 'badge-mauve'"
                 >
                   {{ user.is_profile_complete ? 'Complete' : 'Incomplete' }}
                 </span>
@@ -204,7 +225,7 @@ onMounted(async () => {
               <td>
                 <span
                   class="badge"
-                  :class="user.is_deleted ? 'bg-secondary' : 'bg-success'"
+                  :class="user.is_deleted ? 'badge-muted' : 'badge-rose'"
                 >
                   {{ user.is_deleted ? 'Inactive' : 'Active' }}
                 </span>
@@ -219,7 +240,7 @@ onMounted(async () => {
               <td class="text-end">
                 <router-link
                   :to="`/admin/users/${user._id}`"
-                  class="btn btn-sm btn-outline-primary"
+                  class="btn btn-sm btn-outline-rose"
                 >
                   <i class="bi bi-eye me-1"></i>
                   View
@@ -240,32 +261,32 @@ onMounted(async () => {
 
         <div class="d-flex justify-content-between align-items-center p-3">
 
-        <div class="text-muted small">
-          Page {{ currentPage }} of {{ totalPages }}
+          <div class="text-muted small">
+            Page {{ currentPage }} of {{ totalPages }}
+          </div>
+
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" :class="{ disabled: currentPage === 1 }">
+              <button class="page-link" @click="currentPage--">Prev</button>
+            </li>
+
+            <li
+              v-for="page in totalPages"
+              :key="page"
+              class="page-item"
+              :class="{ active: currentPage === page }"
+            >
+              <button class="page-link" @click="currentPage = page">
+                {{ page }}
+              </button>
+            </li>
+
+            <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+              <button class="page-link" @click="currentPage++">Next</button>
+            </li>
+          </ul>
+
         </div>
-
-        <ul class="pagination pagination-sm mb-0">
-          <li class="page-item" :class="{ disabled: currentPage === 1 }">
-            <button class="page-link" @click="currentPage--">Prev</button>
-          </li>
-
-          <li
-            v-for="page in totalPages"
-            :key="page"
-            class="page-item"
-            :class="{ active: currentPage === page }"
-          >
-            <button class="page-link" @click="currentPage = page">
-              {{ page }}
-            </button>
-          </li>
-
-          <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-            <button class="page-link" @click="currentPage++">Next</button>
-          </li>
-        </ul>
-
-      </div>
 
       </div>
     </div>

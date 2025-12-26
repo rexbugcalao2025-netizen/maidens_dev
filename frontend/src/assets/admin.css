@@ -1,0 +1,120 @@
+/* ======================
+   ADMIN BADGES (GLOBAL)
+   ====================== */
+
+.badge {
+  font-weight: 500;
+  padding: 0.35em 0.6em;
+  border-radius: 0.4rem;
+  font-size: 0.75rem;
+}
+
+.badge-rose {
+  background-color: #e85d8f;
+  color: #fff;
+}
+
+.badge-plum {
+  background-color: #6f2d5f;
+  color: #fff;
+}
+
+.badge-dusty {
+  background-color: #b48aa5;
+  color: #fff;
+}
+
+.badge-muted {
+  background-color: #e4d3dc;
+  color: #4a3b42;
+}
+
+
+/* ==========================
+   PINK THEME BUTTONS
+   ========================== */
+
+/* Primary Action (Save, View, Confirm) */
+.btn-rose {
+  background-color: #e85d8f;
+  border-color: #e85d8f;
+  color: #fff;
+}
+
+.btn-rose:hover,
+.btn-rose:focus {
+  background-color: #d94f83;
+  border-color: #d94f83;
+  color: #fff;
+}
+
+/* Secondary / Neutral */
+.btn-dusty {
+  background-color: #b84c7a;
+  border-color: #b84c7a;
+  color: #fff;
+}
+
+.btn-dusty:hover {
+  background-color: #a8436c;
+  border-color: #a8436c;
+}
+
+/* Destructive / Disable */
+.btn-muted {
+  background-color: #9b7b8f;
+  border-color: #9b7b8f;
+  color: #fff;
+}
+
+.btn-muted:hover {
+  background-color: #8c6d80;
+  border-color: #8c6d80;
+}
+
+.btn-outline-muted {
+  background-color: transparent;
+  border-color: #8c6d80;
+  color: #8c6d80;
+}
+
+.btn-outline-muted:hover {
+  background-color: #8c6d80;
+  color: #fff;
+}
+
+/* Outline Variant */
+.btn-outline-rose {
+  background-color: transparent;
+  border-color: #e85d8f;
+  color: #e85d8f;
+}
+
+.btn-outline-rose:hover {
+  background-color: #e85d8f;
+  color: #fff;
+}
+
+
+.btn-plum {
+  background-color: #6f2d5f;
+  border-color: #6f2d5f;
+  color: #fff;
+}
+
+.btn-plum:hover {
+  background-color: #6f2d5f;
+  border-color: #6f2d5f;
+}
+
+.btn-outline-plum {
+  background-color: transparent;
+  border-color: #6f2d5f;
+  color: #6f2d5f;
+}
+
+.btn-outline-plum:hover {
+  background-color: #6f2d5f;
+  color: #fff;
+}
+

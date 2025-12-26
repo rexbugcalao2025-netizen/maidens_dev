@@ -1,4 +1,5 @@
 const Client = require('../models/Client');
+const Employee = require('../models/Employee')
 
 /**
  * CREATE CLIENT (Admin only)
@@ -9,6 +10,18 @@ exports.createClient = async (req, res) => {
 
     if (!user_id) {
       return res.status(400).json({ message: 'user_id is required' });
+    }
+
+    // 🚫 BLOCK: user is an employee
+    const existingEmployee = await Employee.findOne({
+      user_id,
+      date_retired: null
+    })
+
+    if (existingEmployee) {
+      return res.status(400).json({
+        message: 'User is an employee and cannot be a client'
+      })
     }
 
     const client = await Client.create({
@@ -32,14 +45,28 @@ exports.createClient = async (req, res) => {
  */
 exports.getClients = async (req, res) => {
   try {
-    const clients = await Client.find()
-      .populate('user_id', 'first_name last_name email');
-    res.json(clients);
+    const clients = await Client.find({ is_deleted: false })
+      .populate('user_id', 'email full_name first_name last_name is_admin')
+
+    // 🔄 Normalize response
+    const normalizedClients = clients.map(client => {
+      const obj = client.toObject()
+
+      return {
+        ...obj,
+        user: obj.user_id,   // expose as `user`
+        user_id: undefined   // hide internal ref
+      }
+    })
+
+    res.json(normalizedClients)
   } catch (err) {
-    console.error('GetClients error:', err);
-    res.status(500).json({ message: 'Failed to fetch clients' });
+    console.error('GetClients error:', err)
+    res.status(500).json({ message: 'Failed to load clients' })
   }
-};
+}
+
+
 
 /**
  * GET CLIENT BY ID (Admin only)
@@ -60,6 +87,29 @@ exports.getClientById = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch client' });
   }
 };
+
+/**
+ * GET CLIENT BY USER ID (Admin only)
+ */
+exports.getClientByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    const client = await Client.findOne({
+      user_id: userId,
+      is_deleted: false
+    })
+
+    if (!client) {
+      return res.status(404).json({ message: 'Client not found' })
+    }
+
+    res.json(client)
+  } catch (err) {
+    console.error('GetClientByUserId error:', err)
+    res.status(500).json({ message: 'Failed to load client' })
+  }
+}
 
 /**
  * UPDATE CLIENT NOTES OR OCCUPATION (Admin only)
@@ -181,12 +231,16 @@ exports.removeOccupation = async (req, res) => {
       return res.status(404).json({ message: 'Client not found' });
     }
 
-    const occupation = client.occupation.id(occ_id);
-    if (!occupation) {
+    const originalLength = client.occupation.length;
+
+    client.occupation = client.occupation.filter(
+      occ => occ._id.toString() !== occ_id
+    );
+
+    if (client.occupation.length === originalLength) {
       return res.status(404).json({ message: 'Occupation not found' });
     }
 
-    occupation.remove();
     await client.save();
 
     res.json({
@@ -198,3 +252,29 @@ exports.removeOccupation = async (req, res) => {
     res.status(500).json({ message: 'Failed to remove occupation' });
   }
 };
+
+/**
+ * UPDATE CLIENT NOTES (Admin only)
+ */
+exports.updateClientNotes = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { notes } = req.body
+
+    const client = await Client.findById(id)
+    if (!client || client.is_deleted) {
+      return res.status(404).json({ message: 'Client not found' })
+    }
+
+    client.notes = notes
+    await client.save()
+
+    res.json({
+      message: 'Client notes updated',
+      client
+    })
+  } catch (err) {
+    console.error('UpdateClientNotes error:', err)
+    res.status(500).json({ message: 'Failed to update client notes' })
+  }
+}

@@ -39,19 +39,35 @@ exports.createEmployee = async (req, res) => {
 };
 
 /**
- * GET ALL EMPLOYEES (ADMIN)
+ * GET (ACTIVE) EMPLOYEES (ADMIN)
  */
 exports.getEmployees = async (req, res) => {
   try {
-    const employees = await Employee.find()
-      .populate('user_id', 'first_name last_name email');
+    const employees = await Employee.find({
+      date_retired: null   // ✅ Active employees only
+    })
+      .populate(
+        'user_id',
+        'email full_name first_name last_name is_deleted'
+      )
 
-    res.json(employees);
+    // Normalize response (same pattern as Clients)
+    const normalized = employees.map(emp => {
+      const obj = emp.toObject()
+      return {
+        ...obj,
+        user: obj.user_id,
+        user_id: undefined
+      }
+    })
+
+    res.json(normalized)
   } catch (err) {
-    console.error('Get employees error:', err);
-    res.status(500).json({ message: 'Failed to fetch employees' });
+    console.error('GetEmployees error:', err)
+    res.status(500).json({ message: 'Failed to load employees' })
   }
-};
+}
+
 
 /**
  * GET EMPLOYEE BY ID (ADMIN)
@@ -71,6 +87,33 @@ exports.getEmployeeById = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch employee' });
   }
 };
+
+/**
+ * GET EMPLOYEE BY USER ID (ADMIN)
+ */
+exports.getEmployeeByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    const employee = await Employee.findOne({
+      user_id: userId,
+      date_retired: null
+    })
+
+    if (!employee) {
+      return res.status(404).json({
+        message: 'Employee not found'
+      })
+    }
+
+    res.json(employee)
+  } catch (err) {
+    console.error('GetEmployeeByUserId error:', err)
+    res.status(500).json({
+      message: 'Failed to load employee'
+    })
+  }
+}
 
 /**
  * GET MY EMPLOYEE PROFILE (LOGGED-IN USER)

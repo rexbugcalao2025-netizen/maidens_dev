@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const { createAccessToken } = require('../auth');
 
+
 const SALT_ROUNDS = 10;
 
 /* ============================
@@ -188,6 +189,12 @@ exports.getUsers = async (req, res) => {
  */
 exports.getUserById = async (req, res) => {
   try {
+
+    const { Types } = require('mongoose')
+
+    if (!Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid user ID' })
+    }
     const user = await User.findById(req.params.id);
 
     if (!user || user.is_deleted) {

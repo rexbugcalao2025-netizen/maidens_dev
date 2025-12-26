@@ -12,11 +12,19 @@ const { verify, verifyAdmin } = require('../auth'); // destructured
 // Create employee (Admin only)
 router.post('/', verify, verifyAdmin, employeeController.createEmployee);
 
-// Get all employees (Admin only)
+// Get active employees (Admin only)
 router.get('/', verify, verifyAdmin, employeeController.getEmployees);
 
 // Get employee by ID (Admin only)
 router.get('/:id', verify, verifyAdmin, employeeController.getEmployeeById);
+
+// Get employee by User ID (Admin only)
+router.get(
+  '/by-user/:userId',
+  verify,
+  verifyAdmin,
+  employeeController.getEmployeeByUserId
+)
 
 // Get my employee profile (Logged-in user)
 router.get('/me/profile', verify, employeeController.getMyEmployeeProfile);

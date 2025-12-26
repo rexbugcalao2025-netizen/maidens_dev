@@ -104,14 +104,20 @@ const employeeSchema = new mongoose.Schema(
 
     tax_identification_number: {
       type: String,
-      required: true,
       trim: true,
-      unique: true
+      unique: true,
+      sparse: true // ⭐ IMPORTANT
     },
 
-    job_position: [jobPositionSchema],    
-    credentials: [credentialSchema]
-  },
+    job_position: {
+      type: [jobPositionSchema],
+      default: []
+    },    
+    credentials: {
+      type: [credentialSchema],
+      default: [] 
+    }
+  },    
   {
     collection: 'employees',
     timestamps: true

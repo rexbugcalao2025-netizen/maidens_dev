@@ -284,7 +284,7 @@ const saveProfile = async () => {
         </div>
 
         <button
-            class="btn btn-primary"
+            class="btn btn-rose"
             :disabled="saving"
             @click="saveProfile">
          {{ saving ? 'Saving...' : 'Save Changes' }}

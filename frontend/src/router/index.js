@@ -55,6 +55,17 @@ const routes = [
       {
         path: 'employees',
         component: () => import('../pages/admin/EmployeesPage.vue')
+      },            
+      {
+        path: 'employees/create/:userId',
+        name: 'admin-create-employee',
+        component: () => import('../pages/admin/CreateEmployeePage.vue'),
+        meta: { requiresAdmin: true }
+      },
+      {
+        path: 'employees/:id',
+        name: 'admin-employee-details',
+        component: () => import('../pages/admin/EmployeeDetailsPage.vue')
       },
       {
         path: 'services',
