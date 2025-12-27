@@ -118,3 +118,15 @@
   color: #fff;
 }
 
+
+/* ==========================
+   FORM LABELS
+   ========================== */
+
+.form-label {
+  font-weight: 500;
+}
+
+.form-label .text-danger {
+  font-size: 0.85em;
+}

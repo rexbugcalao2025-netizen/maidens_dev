@@ -9,34 +9,44 @@ exports.createEmployee = async (req, res) => {
       user_id,
       date_hired,
       tax_identification_number,
-      job_position
+      job_position = [],
+      credentials = []
     } = req.body;
 
-    if (!user_id || !date_hired || !tax_identification_number) {
-      return res.status(400).json({ message: 'Required fields missing' });
+    if (!user_id || !date_hired) {
+      return res.status(400).json({
+        message: 'user_id and date_hired are required'
+      });
     }
 
     const exists = await Employee.findOne({ user_id });
     if (exists) {
-      return res.status(409).json({ message: 'Employee already exists for this user' });
+      return res.status(409).json({
+        message: 'Employee already exists for this user'
+      });
     }
 
     const employee = await Employee.create({
       user_id,
       date_hired,
       tax_identification_number,
-      job_position
+      job_position,
+      credentials
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Employee created successfully',
       employee
     });
   } catch (err) {
     console.error('Create employee error:', err);
-    res.status(500).json({ message: 'Failed to create employee' });
+
+    return res.status(500).json({
+      message: err.message || 'Failed to create employee'
+    });
   }
 };
+
 
 /**
  * GET (ACTIVE) EMPLOYEES (ADMIN)

@@ -42,6 +42,11 @@ onMounted(async () => {
   try {
     const res = await api.get(`/users/${route.params.userId}`)
     user.value = res.data
+
+    // DEBUG BLOCK -- TO REMOVE LATER
+    console.log(user);
+    console.log(user.value);
+
   } catch (err) {
     notyf.error('Failed to load user')
     router.push('/admin/users')
@@ -52,6 +57,11 @@ onMounted(async () => {
 
 // Submit
 const submit = async () => {
+
+  if (saving.value) {
+    return;
+  }
+
   if (!form.value.date_hired || !form.value.tax_identification_number) {
     notyf.error('Please fill in all required fields')
     return
@@ -60,7 +70,9 @@ const submit = async () => {
   saving.value = true
 
   try {
-    await api.post('/employees', {
+
+
+    const res = await api.post('/employees', {
         user_id: user.value._id,
         date_hired: form.value.date_hired,
         tax_identification_number: form.value.tax_identification_number,
@@ -70,7 +82,7 @@ const submit = async () => {
             entity: p.entity.toUpperCase(),
             date_started: p.date_started,
             date_ended: p.date_ended || null,
-            is_active: p.is_active
+            is_active: isActiveByEndDate(p.date_ended)
         })),
 
         credentials: credentials.value.map(c => ({
@@ -78,17 +90,16 @@ const submit = async () => {
             value: c.value,
             acquire_on_date: c.acquire_on_date,
             expire_on_date: c.expire_on_date || null,
-            is_active: c.is_active
+            is_active: isActiveByEndDate(c.date_ended)
         }))
-    })
+    })    
 
-    console.log('CREATE EMPLOYEE RESPONSE:', res.data)
+    notyf.success('Employee profile created');   
 
-    notyf.success('Employee profile created')
     router.push({
       name: 'admin-employee-details',
       params: { id: res.data.employee._id }
-    })
+    });
 
 
 
@@ -130,6 +141,21 @@ const addCredential = () => {
 const removeCredential = (index) => {
   credentials.value.splice(index, 1)
 }
+
+// Set the isActive value for Job Profile and Credential
+// based on the date_ended
+const isActiveByEndDate = (endDate) => {
+  if (!endDate) {
+    return true;
+  }
+
+  const end = new Date(endDate);
+  if (isNaN(end.getTime())) {
+    return true;
+  }
+
+  return end >= new Date();
+};
 
 
 
@@ -248,18 +274,15 @@ const removeCredential = (index) => {
 
             <!-- ACTIVE -->
             <div class="form-check mb-2">
-                <input
-                v-model="position.is_active"
-                type="checkbox"
-                class="form-check-input"
-                :id="`active-${index}`"
-                />
-                <label
-                class="form-check-label"
-                :for="`active-${index}`"
+                <span
+                  v-if="position.date_started"
+                  class="badge"
+                  :class="isActiveByEndDate(position.date_ended)
+                    ? 'badge-rose'
+                    : 'badge-muted'"
                 >
-                Active
-                </label>
+                  {{ isActiveByEndDate(position.date_ended) ? 'Active' : 'Inactive' }}
+                </span>
             </div>
 
             <!-- REMOVE -->
@@ -351,18 +374,15 @@ const removeCredential = (index) => {
 
             <!-- ACTIVE -->
             <div class="form-check mb-2">
-                <input
-                v-model="cred.is_active"
-                type="checkbox"
-                class="form-check-input"
-                :id="`cred-active-${index}`"
-                />
-                <label
-                class="form-check-label"
-                :for="`cred-active-${index}`"
-                >
-                Active
-                </label>
+              <span
+                v-if="cred.acquire_on_date"
+                class="badge"
+                :class="isActiveByEndDate(cred.expire_on_date)
+                  ? 'badge-rose'
+                  : 'badge-muted'"
+              >
+                {{ isActiveByEndDate(cred.expire_on_date) ? 'Active' : 'Expired' }}
+              </span>
             </div>
 
             <!-- REMOVE -->
