@@ -59,6 +59,11 @@ const submit = async () => {
   }
 }
 
+const forgotPassword = () => {
+  // UNWIRED FOR NOW
+  alert('Forgot password feature coming soon.');
+};
+
 </script>
 
 <template>
@@ -95,6 +100,17 @@ const submit = async () => {
           class="form-control"
           required
         />
+      </div>
+
+      <!-- Forgot Password -->
+      <div class="text-end mb-3">
+        <a
+          href="#"
+          class="small text-primary text-muted"
+          @click.prevent="forgotPassword"
+        >
+          Forgot password?
+        </a>
       </div>
 
       <button

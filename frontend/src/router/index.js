@@ -1,10 +1,11 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
+import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '../stores/auth';
 
 // Public pages
-import HomePage from '../pages/HomePage.vue'
-import LoginPage from '../pages/LoginPage.vue'
-import RegisterPage from '../pages/RegisterPage.vue'
+import HomePage from '../pages/HomePage.vue';
+import LoginPage from '../pages/LoginPage.vue';
+import RegisterPage from '../pages/RegisterPage.vue';
+import ProductCategoryPage from '../pages/admin/product-categories/ProductCategoryPage.vue';
 
 const routes = [
   {
@@ -76,9 +77,11 @@ const routes = [
         component: () => import('../pages/admin/ProductsPage.vue')
       },
       {
-        path: 'product-categories',
-        component: () => import('../pages/admin/ProductCategoriesPage.vue')
-      },
+          path: '/admin/categories',
+          name: 'AdminCategories',
+          component: ProductCategoryPage,
+          meta: { requiresAuth: true, requiresAdmin: true }
+        },
       {
         path: 'client-orders',
         component: () => import('../pages/admin/ClientOrdersPage.vue')

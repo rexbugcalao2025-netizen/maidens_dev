@@ -22,8 +22,7 @@ const productCategorySchema = new mongoose.Schema(
     name: { 
       type: String, 
       required: true, 
-      trim: true, 
-      unique: true 
+      trim: true
     },
     sub_categories: [subCategorySchema],
     is_deleted: {
@@ -38,11 +37,22 @@ const productCategorySchema = new mongoose.Schema(
   }
 );
 
+productCategorySchema.index(
+  { name: 1 },
+  { unique: true, collation: { locale: 'en', strength: 2 } }
+);
+
 /**
  * Automatically exclude soft-deleted categories
+ * unless explicitly requested
  */
-productCategorySchema.pre(/^find/, function (next) {
-  this.where({ is_deleted: false });  
+productCategorySchema.pre(/^find/, function () {
+  if (this.getOptions().includeDeleted) {
+    return;
+  }
+
+  this.where({ is_deleted: false });
+  
 });
 
 module.exports = mongoose.model('ProductCategory', productCategorySchema);

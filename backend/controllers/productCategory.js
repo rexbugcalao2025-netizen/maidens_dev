@@ -24,11 +24,15 @@ exports.createCategory = async (req, res) => {
  */
 exports.getCategories = async (req, res) => {
   try {
-    const categories = await ProductCategory.find().sort({ createdAt: -1 });
-    res.json(categories);
+    const categories = await ProductCategory
+      .find()
+      .setOptions({ includeDeleted: true }) // ✅ OVERRIDE SOFT DELETE
+      .sort({ createdAt: -1 });
+
+    res.status(200).send(categories);
   } catch (err) {
-    console.error('GetCategories error:', err);
-    res.status(500).json({ message: 'Failed to fetch categories' });
+    console.error('Get categories error:', err);
+    res.status(500).send({ error: 'Error fetching categories' });
   }
 };
 
@@ -58,7 +62,13 @@ exports.updateCategory = async (req, res) => {
       { new: true, runValidators: true }
     );
 
+
+
     if (!category) return res.status(404).json({ message: 'Category not found' });
+    
+    // BUSINESS RULE: Archived categories can only be restored but not edited.
+    if (category.is_deleted) return res.status(404).json({message: 'Can not edit a Category in archive'});
+
     res.json({ message: 'Category updated', category });
   } catch (err) {
     console.error('UpdateCategory error:', err);

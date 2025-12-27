@@ -211,6 +211,7 @@ const logout = () => {
                   </router-link>
                 </li>
 
+                <!-- ✅ PRODUCT CATEGORIES -->
                 <li>
                   <router-link class="dropdown-item" to="/admin/categories">
                     <i class="bi bi-tags me-2"></i>
