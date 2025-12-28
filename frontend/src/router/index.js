@@ -7,6 +7,7 @@ import LoginPage from '../pages/LoginPage.vue';
 import RegisterPage from '../pages/RegisterPage.vue';
 import ProductCategoryPage from '../pages/admin/product-categories/ProductCategoryPage.vue';
 
+
 const routes = [
   {
     path: '/',
@@ -60,14 +61,13 @@ const routes = [
       {
         path: 'employees/create/:userId',
         name: 'admin-create-employee',
-        component: () => import('../pages/admin/CreateEmployeePage.vue'),
-        meta: { requiresAdmin: true }
+        component: () => import('../pages/admin/CreateEmployeePage.vue')        
       },
       {
         path: 'employees/:id',
         name: 'admin-employee-details',
         component: () => import('../pages/admin/EmployeeDetailsPage.vue')
-      },
+      },      
       {
         path: 'services',
         component: () => import('../pages/admin/ServicesPage.vue')
@@ -75,9 +75,17 @@ const routes = [
       {
         path: 'products',
         component: () => import('../pages/admin/ProductsPage.vue')
+      },      
+      {
+      path: 'products/new',
+      component: () => import('../pages/admin/products/ProductForm.vue')
       },
       {
-          path: '/admin/categories',
+      path: 'products/:id',
+      component: () => import('../pages/admin/products/ProductForm.vue')
+      },
+      {
+          path: 'categories',
           name: 'AdminCategories',
           component: ProductCategoryPage,
           meta: { requiresAuth: true, requiresAdmin: true }

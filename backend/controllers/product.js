@@ -99,16 +99,19 @@ exports.updateProduct = async (req, res) => {
  */
 exports.getProducts = async (req, res) => {
   try {
-    const products = await Product.find()
-      .populate('category')
-      .populate('sub_category')
-      .sort({ createdAt: -1 });
+      const products = await Product.find({ is_deleted: false })
+        .populate({
+          path: 'category',
+          select: '_id name is_deleted' // ✅ exclude sub_categories
+        })
+        // ❌ DO NOT populate sub_category
+        .sort({ createdAt: -1 });
 
-    res.json(products);
-  } catch (err) {
-    console.error('GetProducts error:', err);
-    res.status(500).json({ message: 'Failed to fetch products' });
-  }
+      res.json(products);
+    } catch (err) {
+      console.error('GetProducts error:', err);
+      res.status(500).json({ message: 'Failed to fetch products' });
+  };
 };
 
 /**

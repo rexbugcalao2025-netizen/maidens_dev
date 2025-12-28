@@ -284,6 +284,11 @@ const logout = () => {
     color: #b84c7a;
   }
 
+  /* .router-link-active {
+    font-weight: bold;
+    border-bottom: 2px solid #fff;
+  } */
+
   /* Dropdown */
   .custom-navbar .dropdown-menu {
     background-color: #fde6ef;
@@ -316,6 +321,8 @@ const logout = () => {
   .custom-navbar .dropdown-divider {
     opacity: 0.4;
   }
+
+ 
 
 </style>
 

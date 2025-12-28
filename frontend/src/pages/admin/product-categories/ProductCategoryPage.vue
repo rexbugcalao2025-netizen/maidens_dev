@@ -89,7 +89,7 @@ onMounted(loadCategories);
       <div class="d-flex align-items-center gap-2">
 
         <!-- CATEGORY SELECT -->
-        <span>Filter</span>
+        <span class="fw-semibold">Filter</span>
         <select
           class="form-select"
           style="min-width: 260px"
