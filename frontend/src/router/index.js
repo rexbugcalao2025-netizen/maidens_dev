@@ -5,7 +5,10 @@ import { useAuthStore } from '../stores/auth';
 import HomePage from '../pages/HomePage.vue';
 import LoginPage from '../pages/LoginPage.vue';
 import RegisterPage from '../pages/RegisterPage.vue';
+
+// Admin pages
 import ProductCategoryPage from '../pages/admin/product-categories/ProductCategoryPage.vue';
+import ServiceCategoryPage from '../pages/admin/service-categories/ServiceCategoryPage.vue';
 
 
 const routes = [
@@ -73,6 +76,12 @@ const routes = [
         component: () => import('../pages/admin/ServicesPage.vue')
       },
       {
+          path: 'service-categories',
+          name: 'AdminServiceCategories',
+          component: ServiceCategoryPage,
+          meta: { requiresAuth: true, requiresAdmin: true }
+      },
+      {
         path: 'products',
         component: () => import('../pages/admin/ProductsPage.vue')
       },      
@@ -89,7 +98,7 @@ const routes = [
           name: 'AdminCategories',
           component: ProductCategoryPage,
           meta: { requiresAuth: true, requiresAdmin: true }
-        },
+      },
       {
         path: 'client-orders',
         component: () => import('../pages/admin/ClientOrdersPage.vue')

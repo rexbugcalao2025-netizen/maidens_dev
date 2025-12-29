@@ -1,4 +1,5 @@
 const Service = require("../models/Service");
+const ServiceCategory = require("../models/ServiceCategory");
 
 /**
  * Create a new service (Admin)
@@ -8,7 +9,8 @@ module.exports.createService = async (req, res) => {
     const {
       name,
       description,
-      category,
+      category_id,
+      sub_category_id,
       duration_in_minutes,
       labor_price,
       materials,
@@ -16,10 +18,29 @@ module.exports.createService = async (req, res) => {
       date_ended
     } = req.body;
 
+    const categoryDoc = await ServiceCategory.findById(category_id);
+
+    if (!categoryDoc || !categoryDoc.is_active) {
+      return res.status(400).send({ error: "Invalid service category" });
+    }
+
+    const subCategory = categoryDoc.sub_categories.id(sub_category_id);
+
+    if (!subCategory || !subCategory.is_active) {
+      return res.status(400).send({ error: "Invalid service subcategory" });
+    }
+
     const newService = new Service({
       name,
       description,
-      category,
+      category: {
+        id: categoryDoc._id,
+        name: categoryDoc.name
+      },
+      sub_category: {
+        id: subCategory._id,
+        name: subCategory.name
+      },
       duration_in_minutes,
       labor_price,
       materials,
@@ -29,8 +50,8 @@ module.exports.createService = async (req, res) => {
     });
 
     const savedService = await newService.save();
-
     res.status(201).send(savedService);
+
   } catch (err) {
     res.status(500).send({
       error: "Error creating service",
@@ -38,6 +59,7 @@ module.exports.createService = async (req, res) => {
     });
   }
 };
+
 
 /**
  * Get all active services (Public)
@@ -100,9 +122,24 @@ module.exports.getServiceById = async (req, res) => {
  */
 module.exports.updateService = async (req, res) => {
   try {
+
+    // -- Updates dont include categories and sub-categories
+    // -- Retire the existing Service and create a new one with chosen category and sub-category
+    
+    const allowedUpdates = (
+      ({ name, description, duration_in_minutes, labor_price, materials, date_ended }) => ({
+        name,
+        description,        
+        duration_in_minutes,
+        labor_price,
+        materials,
+        date_ended
+      })
+    )(req.body);
+
     const updatedService = await Service.findByIdAndUpdate(
       req.params.serviceId,
-      req.body,
+      allowedUpdates,
       { new: true, runValidators: true }
     );
 

@@ -61,36 +61,79 @@ exports.addImages = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = { ...req.body };
+    const updates = req.body;
 
-    // If price changes, add to price history
-    if (updates.price) {
-      const product = await Product.findById(id);
-      if (!product) return res.status(404).json({ message: 'Product not found' });
-
-      if (updates.price !== product.price) {
-        product.price = updates.price;
-        product.price_history.push({ price: updates.price });
-      }
-
-      // Update other fields
-      if (updates.name) product.name = updates.name;
-      if (updates.description) product.description = updates.description;
-      if (updates.category) product.category = updates.category;
-      if (updates.sub_category) product.sub_category = updates.sub_category;
-
-      await product.save();
-      return res.json({ message: 'Product updated', product });
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
     }
 
-    // For non-price updates
-    const product = await Product.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
-    if (!product) return res.status(404).json({ message: 'Product not found' });
+    /* PRICE CHANGE DETECTION */
+    if (
+      typeof updates.price === 'number' &&
+      updates.price !== product.price
+    ) {
+      product.price = updates.price;
+      product.price_history.push({
+        price: updates.price,
+        date_changed: new Date()
+      });
+    }
+
+    /* OTHER FIELDS */
+    if (typeof updates.name === 'string') {
+      product.name = updates.name;
+    }
+
+    if (typeof updates.description === 'string') {
+      product.description = updates.description;
+    }
+
+    if (updates.category) {
+      product.category = updates.category;
+    }
+
+    // allow explicit null (important)
+    if ('sub_category' in updates) {
+      product.sub_category = updates.sub_category;
+    }
+
+    await product.save();
 
     res.json({ message: 'Product updated', product });
+
   } catch (err) {
     console.error('UpdateProduct error:', err);
     res.status(500).json({ message: 'Failed to update product' });
+  }
+};
+
+
+/**
+ * Replace Product Images (used for removal)
+ */
+exports.updateImages = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { images } = req.body;
+
+    if (!Array.isArray(images)) {
+      return res.status(400).json({ message: 'Images must be an array' });
+    }
+
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    product.images = images;
+    await product.save();
+
+    res.json({ message: 'Images updated', product });
+
+  } catch (err) {
+    console.error('UpdateImages error:', err);
+    res.status(500).json({ message: 'Failed to update images' });
   }
 };
 
@@ -112,6 +155,20 @@ exports.getProducts = async (req, res) => {
       console.error('GetProducts error:', err);
       res.status(500).json({ message: 'Failed to fetch products' });
   };
+};
+
+exports.getProductsById = async (req, res) => {
+  try {
+
+    const product = await Product.findById(req.params.id);
+    if(!product) return  res.status(404).json({message: 'Product not found'});
+    res.json(product);
+
+  } catch (err) {
+    console.error('Get product error:', err);
+    res.status(500).json({message: 'Failed to fetch product'});
+  }
+
 };
 
 /**

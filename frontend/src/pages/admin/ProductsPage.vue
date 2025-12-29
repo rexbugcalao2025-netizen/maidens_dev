@@ -77,8 +77,6 @@ const loadSubCategories = async (categoryId) => {
 
 // placeholder for future product creation
 function goToCreate() {
-  alert("Create Product coming next 🚧");
-  // later:
   router.push("/admin/products/new");
 }
 
@@ -142,7 +140,10 @@ onMounted(loadCategories);
           </option>
         </select>
 
-        <span class="fw-semibold">Search</span>
+        
+        <span class="fw-semibold"> Search</span>
+        
+
         <!-- SECOND ROW: SEARCH -->
         <input
           type="text"

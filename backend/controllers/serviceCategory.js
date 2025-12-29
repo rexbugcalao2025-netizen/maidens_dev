@@ -1,0 +1,165 @@
+const ServiceCategory = require('../models/ServiceCategory');
+
+/**
+ * CREATE CATEGORY
+ */
+exports.createCategory = async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ message: 'Category name is required' });
+
+    const existing = await ServiceCategory.findOne({ name });
+    if (existing) return res.status(409).json({ message: 'Category already exists' });
+
+    const category = await ServiceCategory.create({ name });
+    res.status(201).json({ message: 'Category created', category });
+  } catch (err) {
+    console.error('CreateCategory error:', err);
+    res.status(500).json({ message: 'Failed to create category' });
+  }
+};
+
+/**
+ * GET ALL CATEGORIES
+ */
+exports.getCategories = async (req, res) => {
+  try {
+    const categories = await ServiceCategory
+      .find()
+      .setOptions({ includeDeleted: true }) // ✅ OVERRIDE SOFT DELETE
+      .sort({ createdAt: -1 });
+
+    res.status(200).send(categories);
+  } catch (err) {
+    console.error('Get categories error:', err);
+    res.status(500).send({ error: 'Error fetching categories' });
+  }
+};
+
+/**
+ * GET SINGLE CATEGORY
+ */
+exports.getCategory = async (req, res) => {
+  try {
+    const category = await ServiceCategory.findById(req.params.id);
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+    res.json(category);
+  } catch (err) {
+    console.error('GetCategory error:', err);
+    res.status(500).json({ message: 'Failed to fetch category' });
+  }
+};
+
+/**
+ * UPDATE CATEGORY
+ */
+exports.updateCategory = async (req, res) => {
+  try {
+    const { name } = req.body;
+    const category = await ServiceCategory.findByIdAndUpdate(
+      req.params.id,
+      { name },
+      { new: true, runValidators: true }
+    );
+
+
+
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+    
+    // BUSINESS RULE: Archived categories can only be restored but not edited.
+    if (category.is_deleted) return res.status(404).json({message: 'Can not edit a Category in archive'});
+
+    res.json({ message: 'Category updated', category });
+  } catch (err) {
+    console.error('UpdateCategory error:', err);
+    res.status(500).json({ message: 'Failed to update category' });
+  }
+};
+
+/**
+ * SOFT DELETE CATEGORY
+ */
+exports.deleteCategory = async (req, res) => {
+  try {
+    const category = await ServiceCategory.findByIdAndUpdate(
+      req.params.id,
+      { is_deleted: true },
+      { new: true }
+    );
+
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+
+    res.json({ message: 'Category deleted (soft delete)' });
+  } catch (err) {
+    console.error('DeleteCategory error:', err);
+    res.status(500).json({ message: 'Failed to delete category' });
+  }
+};
+
+
+/**
+ * RESTORE CATEGORY
+ */
+exports.restoreCategory = async (req, res) => {
+  const result = await ServiceCategory.updateOne(
+    { _id: req.params.id },
+    { $set: { is_deleted: false } }
+  );
+
+  if (result.matchedCount === 0) {
+    return res.status(404).json({ message: 'Category not found' });
+  }
+
+  res.json({ message: 'Category restored' });
+};
+
+
+/**
+ * ADD SUB-CATEGORY
+ */
+exports.addSubCategory = async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ message: 'Sub-category name is required' });
+
+    const category = await ServiceCategory.findById(req.params.id);
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+
+    // Check for duplicates
+    const exists = category.sub_categories.some(sc => sc.name.toLowerCase() === name.toLowerCase());
+    if (exists) return res.status(409).json({ message: 'Sub-category already exists' });
+
+    category.sub_categories.push({ name });
+    await category.save();
+
+    res.json({ message: 'Sub-category added', category });
+  } catch (err) {
+    console.error('AddSubCategory error:', err);
+    res.status(500).json({ message: 'Failed to add sub-category' });
+  }
+};
+
+/**
+ * REMOVE SUB-CATEGORY
+ */
+exports.removeSubCategory = async (req, res) => {
+  try {
+    const { subId } = req.params;
+
+    const category = await ServiceCategory.findById(req.params.id);
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+
+    const subIndex = category.sub_categories.findIndex(sc => sc._id.toString() === subId);
+    if (subIndex === -1) return res.status(404).json({ message: 'Sub-category not found' });
+
+    category.sub_categories.splice(subIndex, 1);
+    await category.save();
+
+    res.json({ message: 'Sub-category removed', category });
+  } catch (err) {
+    console.error('RemoveSubCategory error:', err);
+    res.status(500).json({ message: 'Failed to remove sub-category' });
+  }
+};

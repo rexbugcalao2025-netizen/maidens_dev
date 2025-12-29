@@ -204,6 +204,14 @@ const logout = () => {
                   </router-link>
                 </li>
 
+                <!-- ✅ SERVICE CATEGORIES -->
+                <li>
+                  <router-link class="dropdown-item" to="/admin/service-categories">
+                    <i class="bi bi-bookmark me-2"></i>
+                    Service Categories
+                  </router-link>
+                </li>
+
                 <li>
                   <router-link class="dropdown-item" to="/admin/products">
                     <i class="bi bi-box-seam me-2"></i>

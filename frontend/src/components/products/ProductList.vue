@@ -117,7 +117,7 @@ onMounted(() => { loadProducts(); buildSubCategoryMap(); });
           <th>Name</th>
           <th>Category</th>
           <th>Sub-category</th>
-          <th>Price</th>          
+          <th class="text-end">Price</th>          
           <th class="text-end">Actions</th>
         </tr>
       </thead>

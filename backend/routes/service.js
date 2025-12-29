@@ -11,9 +11,6 @@ const router = express.Router();
 // Get all active services
 router.get("/", serviceController.getActiveServices);
 
-// Get single service by ID
-router.get("/:serviceId", serviceController.getServiceById);
-
 /**
  * ADMIN ROUTES
  */
@@ -27,6 +24,10 @@ router.get("/admin/all", verify, verifyAdmin, serviceController.getAllServices);
 // Update a service
 router.patch("/:serviceId", verify, verifyAdmin, serviceController.updateService);
 
+
+// Get single service by ID -- Public
+router.get("/:serviceId", serviceController.getServiceById);
+
 // Archive (soft delete) a service
 router.patch(
   "/:serviceId/archive",
@@ -34,5 +35,8 @@ router.patch(
   verifyAdmin,
   serviceController.archiveService
 );
+
+
+
 
 module.exports = router;

@@ -13,6 +13,7 @@ const productCategoryRoutes = require('./routes/productCategory');
 const cartRoutes = require ('./routes/cart');
 const orderRoutes = require('./routes/order');
 const serviceRoutes = require('./routes/service');
+const serviceCategoryRoutes = require('./routes/serviceCategory');
 const clientServiceRoutes = require('./routes/clientService');
 
 
@@ -72,6 +73,7 @@ app.use('/product-categories', productCategoryRoutes);
 app.use('/carts', cartRoutes);
 app.use('/orders', orderRoutes);
 app.use('/services', serviceRoutes);
+app.use('/service-categories', serviceCategoryRoutes);
 app.use('/client-services',clientServiceRoutes);
 
 
