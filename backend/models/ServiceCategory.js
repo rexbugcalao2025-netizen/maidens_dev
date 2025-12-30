@@ -9,8 +9,16 @@ const subCategorySchema = new mongoose.Schema(
       type: String, 
       required: true, 
       trim: true 
-    }
+    },
+    
+    is_deleted: {
+    type: Boolean,
+    default: false,
+    index: true
+    },
+    
   },
+  
   { _id: true }
 );
 

@@ -20,13 +20,13 @@ module.exports.createService = async (req, res) => {
 
     const categoryDoc = await ServiceCategory.findById(category_id);
 
-    if (!categoryDoc || !categoryDoc.is_active) {
+    if (!categoryDoc || categoryDoc.is_deleted) {
       return res.status(400).send({ error: "Invalid service category" });
     }
 
     const subCategory = categoryDoc.sub_categories.id(sub_category_id);
 
-    if (!subCategory || !subCategory.is_active) {
+    if (!subCategory || subCategory.is_deleted) {
       return res.status(400).send({ error: "Invalid service subcategory" });
     }
 
@@ -125,7 +125,7 @@ module.exports.updateService = async (req, res) => {
 
     // -- Updates dont include categories and sub-categories
     // -- Retire the existing Service and create a new one with chosen category and sub-category
-    
+
     const allowedUpdates = (
       ({ name, description, duration_in_minutes, labor_price, materials, date_ended }) => ({
         name,

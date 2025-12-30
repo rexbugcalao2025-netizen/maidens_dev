@@ -47,6 +47,11 @@ const serviceSchema = new mongoose.Schema(
       name: {
         type: String,
         required: true
+      },
+
+      is_deleted: {
+      type: Boolean,
+      default: false    
       }
     },
 
@@ -58,7 +63,14 @@ const serviceSchema = new mongoose.Schema(
       name: {
         type: String,
         required: true
-      }
+      },
+      
+      is_deleted: {
+      type: Boolean,
+      default: false
+    
+      },
+
     },
 
     duration_in_minutes: {
