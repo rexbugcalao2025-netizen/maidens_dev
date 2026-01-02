@@ -16,3 +16,16 @@
   background-position: center;
   height: 550px;
 }
+
+.navbar {
+  position: relative;
+  z-index: 1100;
+}
+
+.modal {
+  pointer-events: none;
+}
+
+.modal.show {
+  pointer-events: auto;
+}

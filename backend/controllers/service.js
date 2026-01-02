@@ -13,9 +13,7 @@ module.exports.createService = async (req, res) => {
       sub_category_id,
       duration_in_minutes,
       labor_price,
-      materials,
-      date_offered,
-      date_ended
+      materials
     } = req.body;
 
     const categoryDoc = await ServiceCategory.findById(category_id);

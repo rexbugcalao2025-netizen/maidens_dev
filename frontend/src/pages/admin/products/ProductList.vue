@@ -30,7 +30,7 @@ onMounted(loadProducts);
         <tr>
           <th>Name</th>
           <th>Category</th>
-          <th>Price</th>
+          <th style="text-align: left">Price</th>
           <th>Images</th>
           <th></th>
         </tr>

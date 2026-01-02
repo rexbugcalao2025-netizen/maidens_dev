@@ -9,6 +9,7 @@ import RegisterPage from '../pages/RegisterPage.vue';
 // Admin pages
 import ProductCategoryPage from '../pages/admin/product-categories/ProductCategoryPage.vue';
 import ServiceCategoryPage from '../pages/admin/service-categories/ServiceCategoryPage.vue';
+import CreateService from "@/pages/admin/services/CreateService.vue"
 
 
 const routes = [
@@ -73,7 +74,12 @@ const routes = [
       },      
       {
         path: 'services',
-        component: () => import('../pages/admin/ServicesPage.vue')
+        component: () => import('../pages/admin/services/ServicesList.vue')
+      },
+      {
+        path: "/admin/services/create",
+        name: "CreateService",
+        component: CreateService
       },
       {
           path: 'service-categories',
