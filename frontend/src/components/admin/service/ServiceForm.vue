@@ -1,284 +1,198 @@
 <script setup>
-    import { ref, onMounted, watch, computed } from "vue"
-    import { useRouter } from "vue-router"
-    import api from "@/api"
-    import { Notyf } from "notyf"
+  import { ref, onMounted, watch, computed } from "vue"
+  import api from "@/api"
+  import { Notyf } from "notyf"
+  import { useRouter } from "vue-router"
 
-    const router = useRouter()
-    const notyf = new Notyf()
+  const router = useRouter();
+  const notyf = new Notyf()
 
-    /* =======================
-    SERVICE CATEGORIES
-    ======================= */
-    const serviceCategories = ref([])
-    const serviceSubcategories = ref([])
-
-    /* =======================
-    PRODUCT CATEGORIES
-    ======================= */
-    const productCategories = ref([])
-    const productSubCategories = ref([])
-
-    /* =======================
-    PRODUCTS
-    ======================= */
-    const products = ref([])
-
-    /* =======================
-    FILTER STATE (PRODUCTS)
-    ======================= */
-    const filterProductCategory = ref("")
-    const filterProductSubCategory = ref("")
-
-    /* =======================
-    SERVICE FORM
-    ======================= */
-    const form = ref({
-        name: "",
-        category_id: "",
-        sub_category_id: "",
-        description: "",
-        labor_price: null,
-        total_price: null,
-        duration_in_minutes: null,
-        date_offered: "",
-        date_ended: "",
-        materials: [] // { product_id, quantity, price, subTotal }
-    })
-
-    /* =======================
-    TEMP PRODUCT SELECTION
-    ======================= */
-    const selectedProductId = ref("")
-    const selectedQuantity = ref(1)
-
-    /* =======================
-    LOADERS
-    ======================= */
-    const loadServiceCategories = async () => {
-        const res = await api.get("/service-categories");
-
-        // DEBUG
-        console.table(res.data.map(c => ({
-            name: c.name,
-            is_deleted: c.is_deleted
-            })));
-
-        serviceCategories.value = (res.data ?? []).filter(c => !c.is_deleted);
+  /* =======================
+  PROPS / EMITS
+  ======================= */
+  const props = defineProps({
+    modelValue: {
+      type: Object,
+      required: true
     }
+  })
 
-    const loadProductCategories = async () => {
-        const res = await api.get("/product-categories")
-        productCategories.value = res.data ?? []
-    }
+  const emit = defineEmits(["submit"])
 
-    const loadProducts = async () => {
-    const res = await api.get("/products/admin/all")
-    products.value = res.data ?? []
-    }
+  /* =======================
+  LOCAL FORM STATE
+  ======================= */
+  const form = ref(structuredClone(props.modelValue))  
+  // const form = ref({})
 
-    /* =======================
-    WATCHERS — SERVICE
-    ======================= */
-    watch(
-    () => form.value.category_id,
-        (catId) => {
-            const cat = serviceCategories.value.find(c => c._id === catId)
-            serviceSubcategories.value = cat
-                ? cat.sub_categories.filter(s => !s.is_deleted)
-                : []
-            form.value.sub_category_id = ""
-        }
-    )
-
-    /* =======================
-    WATCHERS — PRODUCT FILTER
-    ======================= */
-    watch(filterProductCategory, (catId) => {
-        const cat = productCategories.value.find(c => c._id === catId)
-        productSubCategories.value = cat ? cat.sub_categories : []
-        filterProductSubCategory.value = ""
-        selectedProductId.value = ""
-    })
-
-    watch(filterProductSubCategory, () => {        
-        selectedProductId.value = ""
-    })
-
-    /* =======================
-    WATCHERS — MATERIALS SUB TOTAL
-    ======================= */
-    watch(
-    () => form.value.materials,
-    (materials) => {
-        materials.forEach(m => {
-        m.subtotal = m.price * m.quantity
-        })
+  // watch(
+  //   () => props.modelValue,
+  //   (val) => {
+  //     if (!val) return
+  //     form.value = JSON.parse(JSON.stringify(val))
+  //   },
+  //   { immediate: true }
+  // )
+  watch(
+    () => props.modelValue,
+    (val) => {
+      form.value = structuredClone(val)
     },
     { deep: true }
+  )
+
+  /* =======================
+  SERVICE CATEGORIES
+  ======================= */
+  const serviceCategories = ref([])
+  const serviceSubcategories = ref([])
+
+  /* =======================
+  PRODUCT CATEGORIES
+  ======================= */
+  const productCategories = ref([])
+  const productSubCategories = ref([])
+
+  /* =======================
+  PRODUCTS
+  ======================= */
+  const products = ref([])
+
+  /* =======================
+  FILTER STATE
+  ======================= */
+  const filterProductCategory = ref("")
+  const filterProductSubCategory = ref("")
+
+  /* =======================
+  LOADERS
+  ======================= */
+  const loadServiceCategories = async () => {
+    const res = await api.get("/service-categories")
+    serviceCategories.value = (res.data ?? []).filter(c => !c.is_deleted)
+  }
+
+  const loadProductCategories = async () => {
+    const res = await api.get("/product-categories")
+    productCategories.value = res.data ?? []
+  }
+
+  const loadProducts = async () => {
+    const res = await api.get("/products/admin/all")
+    products.value = res.data ?? []
+  }
+
+  /* =======================
+  WATCHERS
+  ======================= */
+  watch(
+    () => form.value.category_id,
+    (catId) => {
+      const cat = serviceCategories.value.find(c => c._id === catId)
+      serviceSubcategories.value = cat
+        ? cat.sub_categories.filter(s => !s.is_deleted)
+        : []
+      form.value.sub_category_id = ""
+    }
+  )
+
+  watch(filterProductCategory, (catId) => {
+    const cat = productCategories.value.find(c => c._id === catId)
+    productSubCategories.value = cat ? cat.sub_categories : []
+    filterProductSubCategory.value = ""
+  })
+
+  /* =======================
+  MATERIALS
+  ======================= */
+  watch(
+    () => form.value.materials,
+    (materials) => {
+      materials.forEach(m => {
+        m.subtotal = m.price * m.quantity
+      })
+    },
+    { deep: true }
+  )
+
+  const totalMaterialCost = computed(() =>
+    form.value.materials.reduce((sum, m) => sum + m.subtotal, 0)
+  )
+
+  /* =======================
+  VALIDATION
+  ======================= */
+  const isValid = computed(() => {
+    const hasLabor =
+      Number(form.value.labor_price) > 0 &&
+      Number(form.value.duration_in_minutes) > 0
+
+    const hasMaterials =
+      Array.isArray(form.value.materials) &&
+      form.value.materials.length > 0
+
+    return (
+      form.value.name?.trim() &&
+      form.value.category_id &&
+      Number(form.value.total_price) > 0 &&
+      form.value.date_offered &&
+      (hasLabor || hasMaterials)
     )
+  })
 
-    /* =======================
-    COMPUTED — FILTERED PRODUCTS
-    ======================= */
-    const filteredProducts = computed(() => {
-        return products.value.filter(p => {
+  const isBelowCost = computed(() =>
+    Number(form.value.total_price) <
+    (Number(form.value.labor_price) + totalMaterialCost.value)
+  )
 
-             // 🚫 exclude archived products
-            if (p.is_deleted) return false
-
-            const matchCategory =
-            !filterProductCategory.value ||
-            p.category?._id === filterProductCategory.value
-
-            const matchSubCategory =
-            !filterProductSubCategory.value ||
-            p.sub_category === filterProductSubCategory.value
-
-            return matchCategory && matchSubCategory
-        })
-    })
-
-    /* =======================
-    COMPUTED — ENABLE / DISABLE SAVE BUTTON
-    ======================= */
-    const isValid = computed(() => {
-        const hasLabor =
-            Number(form.value.labor_price) > 0 &&
-            Number(form.value.duration_in_minutes) > 0
-
-        const hasMaterials =
-            Array.isArray(form.value.materials) &&
-            form.value.materials.length > 0
-
-        return (
-            form.value.name?.trim() &&
-            form.value.category_id &&
-            Number(form.value.total_price) > 0 &&
-            form.value.date_offered &&
-            (hasLabor || hasMaterials)
-        )
-    })
-
-    /* =======================
-    COMPUTED — TOTAL SERVICE PRICE > LABOR + MATERIAL COST
-    ======================= */
-    const isBelowCost = computed(() => {
-    return Number(form.value.total_price) <
-        (Number(form.value.labor_price) + totalMaterialCost.value)
-    })
-
-    /* =======================
-    PRODUCT HELPERS
-    ======================= */
-    const productName = (id) =>
-    products.value.find(p => p._id === id)?.name || "Unknown"
-
-    const productUnitPrice = (id) =>
-    products.value.find(p => p._id === id)?.price ?? 0
-
-    const productTotalPrice = (item) =>
-    productUnitPrice(item.product_id) * item.quantity
-
-    /* =======================
-    PRODUCTS USED
-    ======================= */
-    const addProduct = () => {
-    if (!selectedProductId.value || selectedQuantity.value < 1) return
-
-    const product = products.value.find(
-        p => p._id === selectedProductId.value
-    )
-
-    if (!product) return
-
+  /* =======================
+  PRODUCT HELPERS
+  ======================= */
+  const addProduct = (product, qty = 1) => {
     const exists = form.value.materials.find(
-        m => m.product_id === selectedProductId.value
+      m => m.product_id === product._id
     )
 
     if (exists) {
-        exists.quantity += selectedQuantity.value
-        exists.subtotal = exists.quantity * exists.price
+      exists.quantity += qty
+      exists.subtotal = exists.quantity * exists.price
     } else {
-        form.value.materials.push({
+      form.value.materials.push({
         product_id: product._id,
         product_name: product.name,
-        quantity: selectedQuantity.value,
+        quantity: qty,
         price: product.price,
-        subtotal: product.price * selectedQuantity.value
-        })
+        subtotal: product.price * qty
+      })
     }
+  }
 
-    selectedProductId.value = ""
-    selectedQuantity.value = 1
-    }
-
-
-    const removeProduct = (productId) => {
-        form.value.materials = form.value.materials.filter(
-            p => p.product_id !== productId
-        )
-    }
-
-    /* =======================
-    TOTAL MATERIAL COST
-    ======================= */
-    const totalMaterialCost = computed(() =>
-    form.value.materials.reduce((sum, item) => sum + item.subtotal, 0)
+  const removeProduct = (id) => {
+    form.value.materials = form.value.materials.filter(
+      m => m.product_id !== id
     )
+  }
 
-    /* =======================
-    PRODUCT QUANTITY VALIDATOR
-    ======================= */
-    const validateQuantity = (item) => {
-        if (!item.quantity || item.quantity < 1) {
-            item.quantity = 1
-            notyf.error("Quantity must be at least 1")
-        }
+  /* =======================
+  SUBMIT
+  ======================= */
+  const submit = () => {
+    if (!isValid.value) {
+      notyf.error("Please complete required fields")
+      return
     }
+    emit("submit", structuredClone(form.value))
+  }
 
-    /* =======================
-    SUBMIT
-    ======================= */
-    const submitForm = async () => {
-    try {
-        const payload = {
-            name: form.value.name,
-            description: form.value.description,
-            category_id: form.value.category_id,
-            sub_category_id: form.value.sub_category_id,
-            duration_in_minutes: Number(form.value.duration_in_minutes),
-            total_price: Number(form.value.total_price),
-            labor_price: Number(form.value.labor_price),
-            materials: Array.isArray(form.value.materials)
-                ? form.value.materials
-                : [],
-            date_offered: form.value.date_offered,
-            date_ended: form.value.date_ended || null        
-        }
-
-        
-        await api.post("/services", payload);
-
-        notyf.success("Service created successfully")
-        router.push("/admin/services")
-    } catch (err) {
-        console.error(err)
-        notyf.error("Failed to create service")
-    }
-    }
-
-    /* =======================
-    MOUNT
-    ======================= */
-    onMounted(() => {
-        loadServiceCategories()
-        loadProductCategories()
-        loadProducts()
-    })
+  /* =======================
+  MOUNT
+  ======================= */
+  onMounted(() => {
+    loadServiceCategories()
+    loadProductCategories()
+    loadProducts()
+  })
 </script>
-
-
 
 
 <template>
@@ -293,13 +207,15 @@
             <button class="d-flex btn btn-outline-plum justify-content-end" id="btn-back"  @click="router.back()">
                 <i class="bi bi-arrow-left me-1"></i> Back
             </button>
+
             <button
-                    class="btn btn-outline-plum"
-                    :disabled="!isValid"
-                    @click="submitForm"
-                >
-                    <i class="bi bi-save me-1"></i> Save Service
+              class="btn btn-outline-plum"
+              :disabled="!isValid"
+              @click="submit"
+            >
+              <i class="bi bi-save me-1"></i> Save Service
             </button>
+
         </div>
 
     </div>

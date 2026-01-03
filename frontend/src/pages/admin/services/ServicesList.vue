@@ -189,7 +189,17 @@
               </td>
 
               <td class="text-end">
+
+              <!-- VIEW -->
                 <router-link
+                  :to="`/admin/services/${s._id}`"
+                  class="btn btn-sm btn-outline-secondary me-2"
+                  title="View Service"
+                >
+                  <i class="bi bi-eye"></i>
+                </router-link>
+
+                <!-- <router-link
                   :to="`/admin/services/${s._id}/edit`"
                   class="btn btn-sm btn-outline-primary me-2"
                 >
@@ -201,7 +211,7 @@
                   @click="archiveService(s)"
                 >
                   <i class="bi bi-trash"></i>
-                </button>
+                </button> -->
               </td>
             </tr>
           </tbody>

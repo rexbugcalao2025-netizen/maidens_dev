@@ -9,7 +9,10 @@ import RegisterPage from '../pages/RegisterPage.vue';
 // Admin pages
 import ProductCategoryPage from '../pages/admin/product-categories/ProductCategoryPage.vue';
 import ServiceCategoryPage from '../pages/admin/service-categories/ServiceCategoryPage.vue';
-import CreateService from "@/pages/admin/services/CreateService.vue"
+import CreateServicePage from '@/pages/admin/services/CreateService.vue'
+import ServicesListPage from  '@/pages/admin/services/ServicesList.vue';
+import ViewServicePage from '@/pages/admin/services/ViewService.vue';
+import EditServicePage from '@/pages/admin/services/EditService.vue';
 
 
 const routes = [
@@ -79,7 +82,24 @@ const routes = [
       {
         path: "/admin/services/create",
         name: "CreateService",
-        component: CreateService
+        component: CreateServicePage
+      },
+      {
+        path: '/admin/services',
+        name: 'AdminServices',
+        component: ServicesListPage
+      },
+      {
+        path: '/admin/services/:id',
+        name: 'ViewService',
+        component: ViewServicePage,
+        props: true
+      },
+      {
+        path: '/admin/services/:serviceId/edit',
+        name: 'EditService',
+        component: EditServicePage,
+        props: true
       },
       {
           path: 'service-categories',

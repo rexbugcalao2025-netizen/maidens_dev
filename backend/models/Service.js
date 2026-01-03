@@ -7,6 +7,11 @@ const materialSchema = new mongoose.Schema(
       ref: "Product",
       required: true
     },
+    product_name: {
+      type: String,
+      required: true,
+      trim: true      
+    },
     quantity: {
       type: Number,
       required: true,
@@ -134,7 +139,9 @@ serviceSchema.pre("save", function () {
     materialsTotal += material.subtotal;
   });
 
-  this.total_price = materialsTotal + this.labor_price;
+  if (this.total_price === 0 || !this.total_price || this.total_price === null) { 
+    this.total_price = materialsTotal + this.labor_price;
+  }  
 
   if (this.date_ended) {
     this.is_active = false;
@@ -148,33 +155,6 @@ serviceSchema.pre("save", function () {
     throw new Error("date_ended must be later than date_offered");
   }
 });
-
-
-serviceSchema.pre("findOneAndUpdate", function () {
-  const update = this.getUpdate();
-  const data = update.$set || update;
-
-  if (data.materials) {
-    let materialsTotal = 0;
-
-    data.materials.forEach(m => {
-      m.subtotal = m.quantity * m.price;
-      materialsTotal += m.subtotal;
-    });
-
-    data.total_price =
-      materialsTotal + (data.labor_price ?? this._update.labor_price ?? 0);
-  }
-
-  if (
-    data.date_offered &&
-    data.date_ended &&
-    data.date_ended <= data.date_offered
-  ) {
-    throw new Error("date_ended must be later than date_offered");
-  }
-});
-
 
 serviceSchema.index({ name: 1 });
 serviceSchema.index({ category: 1 });

@@ -12,51 +12,66 @@ module.exports.createService = async (req, res) => {
       category_id,
       sub_category_id,
       duration_in_minutes,
+      total_price,
       labor_price,
-      materials
+      materials,
+      date_offered,
+      date_ended
     } = req.body;
 
-    const categoryDoc = await ServiceCategory.findById(category_id);
+    const safeMaterials = Array.isArray(materials) ? materials : [];
 
+    const categoryDoc = await ServiceCategory.findById(category_id);
     if (!categoryDoc || categoryDoc.is_deleted) {
-      return res.status(400).send({ error: "Invalid service category" });
+      return res.status(400).json({ error: "Invalid service category" });
     }
 
     const subCategory = categoryDoc.sub_categories.id(sub_category_id);
-
     if (!subCategory || subCategory.is_deleted) {
-      return res.status(400).send({ error: "Invalid service subcategory" });
+      return res.status(400).json({ error: "Invalid service subcategory" });
     }
 
+    // DEBUG
+    console.log(`req.user.id: ${req.user.id}`);
+
+    if (!req.user || !req.user.id) {
+     return res.status(401).json({ error: "Unauthorized" });
+    }
+    
     const newService = new Service({
       name,
       description,
       category: {
         id: categoryDoc._id,
-        name: categoryDoc.name
+        name: categoryDoc.name,
+        is_deleted: categoryDoc.is_deleted
       },
       sub_category: {
         id: subCategory._id,
-        name: subCategory.name
+        name: subCategory.name,
+        is_deleted: subCategory.is_deleted
       },
       duration_in_minutes,
       labor_price,
-      materials,
+      total_price,
       date_offered,
       date_ended,
+      materials: safeMaterials,
       created_by: req.user.id
     });
 
     const savedService = await newService.save();
-    res.status(201).send(savedService);
+    res.status(201).json(savedService);
 
   } catch (err) {
-    res.status(500).send({
+    console.error("CreateService error:", err);
+    res.status(400).json({
       error: "Error creating service",
       details: err.message
     });
   }
 };
+
 
 
 /**
