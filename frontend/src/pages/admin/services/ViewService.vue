@@ -1,75 +1,82 @@
 <script setup>
-import { ref, onMounted, computed } from "vue"
-import { useRoute, useRouter } from "vue-router"
-import api from "@/api"
-import { Notyf } from "notyf"
+  import { ref, onMounted, computed } from "vue"
+  import { useRoute, useRouter } from "vue-router"
+  import api from "@/api"
+  import { Notyf } from "notyf"
 
-const route = useRoute()
-const router = useRouter()
-const notyf = new Notyf()
+  const route = useRoute()
+  const router = useRouter()
+  const notyf = new Notyf()
 
-/* =======================
-STATE
-======================= */
-const service = ref(null)
-const loading = ref(true)
+  /* =======================
+  STATE
+  ======================= */
+  const service = ref(null)
+  const loading = ref(true)
 
-/* =======================
-LOAD SERVICE
-======================= */
-const loadService = async () => {
-  try {
-    const res = await api.get(`/services/${route.params.id}`)
-    service.value = res.data    
-  } catch (err) {
-    console.error(err)
-    notyf.error("Failed to load service")
-    router.push("/admin/services")
-  } finally {
-    loading.value = false
+  /* =======================
+  LOAD SERVICE
+  ======================= */
+  const loadService = async () => {
+    try {
+      const res = await api.get(`/services/${route.params.id}`)
+      service.value = res.data    
+    } catch (err) {
+      console.error(err)
+      notyf.error("Failed to load service")
+      router.push("/admin/services")
+    } finally {
+      loading.value = false
+    }
   }
-}
 
-/* =======================
-COMPUTED
-======================= */
-const totalMaterialCost = computed(() => {
-  if (!service.value?.materials) return 0
-  return service.value.materials.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  )
-})
+  /* =======================
+  COMPUTED
+  ======================= */
+  const totalMaterialCost = computed(() => {
+    if (!service.value?.materials) return 0
+    return service.value.materials.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    )
+  })
 
-const profit = computed(() => {
-  if (!service.value) return 0
-  return (
-    service.value.total_price -
-    service.value.labor_price -
-    totalMaterialCost.value
-  )
-})
+  const profit = computed(() => {
+    if (!service.value) return 0
+    return (
+      service.value.total_price -
+      service.value.labor_price -
+      totalMaterialCost.value
+    )
+  })
 
-/* =======================
-ARCHIVE
-======================= */
-const archiveService = async () => {
-  if (!confirm("Archive this service?")) return
+  /* =======================
+  ARCHIVE
+  ======================= */
+  const archiveService = async () => {
+    if (!confirm("Archive this service?")) return
 
-  try {
-    await api.patch(`/services/${service.value._id}/archive`)
-    notyf.success("Service archived")
-    router.push("/admin/services")
-  } catch (err) {
-    console.error(err)
-    notyf.error("Failed to archive service")
+    try {
+      await api.patch(`/services/${service.value._id}/archive`)
+      notyf.success("Service archived")
+      router.push("/admin/services")
+    } catch (err) {
+      console.error(err)
+      notyf.error("Failed to archive service")
+    }
   }
-}
 
-/* =======================
-MOUNT
-======================= */
-onMounted(loadService)
+  /* =======================
+  COMPUTED
+  ======================= */
+  const canEdit = computed(() => {
+    return service.value && service.value.is_active
+  })
+
+  /* =======================
+  MOUNT
+  ======================= */
+  onMounted(loadService)
 </script>
 
 <template>
@@ -95,8 +102,8 @@ onMounted(loadService)
 
             <button
               class="btn btn-outline-plum me-2"
-              v-if="service?._id"
-              @click="router.push(`/admin/services/${service._id}/edit`)"
+              v-if="canEdit && service?._id"                            
+              @click="canEdit && router.push(`/admin/services/${service._id}/edit`)"
             >
               <i class="bi bi-pencil"></i> Edit
             </button>

@@ -1,10 +1,14 @@
 const Employee = require('../models/Employee');
+const Client = require('../models/Client');
+const generateFMHCode = require('../utils/generateFMHCode');
 
 /**
  * CREATE EMPLOYEE (ADMIN ONLY)
  */
 exports.createEmployee = async (req, res) => {
   try {
+
+    // note: assigns values from requesting procedure (eg. Postman body or frontend payload)
     const {
       user_id,
       date_hired,
@@ -13,12 +17,14 @@ exports.createEmployee = async (req, res) => {
       credentials = []
     } = req.body;
 
+    // note: ensure that user_id and date_hired is not empty or null
     if (!user_id || !date_hired) {
       return res.status(400).json({
         message: 'user_id and date_hired are required'
       });
     }
 
+    // note: ensure that user_id is not used by other employee
     const exists = await Employee.findOne({ user_id });
     if (exists) {
       return res.status(409).json({
@@ -26,12 +32,28 @@ exports.createEmployee = async (req, res) => {
       });
     }
 
-    const employee = await Employee.create({
+    // note: ensure that user_id is not used by a client.
+    const isClient = await Client.findOne({user_id});
+    if (isClient){
+      return res.status(409)
+        .json({
+          message: 'User Id has already been assigned to a client'
+        });
+    }
+
+    const employeeCode = await generateFMHCode({
+      type: 'employee',
+      branch: 'DVO'
+    });
+
+
+    const employee = await Employee.create({      
       user_id,
       date_hired,
       tax_identification_number,
       job_position,
-      credentials
+      credentials,
+      employee_code: employeeCode
     });
 
     return res.status(201).json({

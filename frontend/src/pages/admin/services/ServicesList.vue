@@ -21,6 +21,20 @@
     const currentPage = ref(1)
     const pageSize = ref(10)
 
+    /* SORTING */
+    const sortKey = ref("")      // e.g. "name", "price"
+    const sortOrder = ref("asc") // "asc" | "desc"
+
+    const toggleSort = (key) => {
+      if (sortKey.value === key) {
+        sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc"
+      } else {
+        sortKey.value = key
+        sortOrder.value = "asc"
+      }
+    }
+
+
     /* LOADERS */
     const loadServices = async () => {
     try {
@@ -46,7 +60,7 @@
       currentPage.value = 1
     })
 
-    const filteredServices = computed(() => {      
+  const filteredServices = computed(() => {      
 
       return services.value.filter(s => {
           const matchesSearch =
@@ -66,9 +80,47 @@
       })
     })
 
+  const sortedServices = computed(() => {
+    if (!sortKey.value) return filteredServices.value
+
+    return [...filteredServices.value].sort((a, b) => {
+      let aVal, bVal
+
+      switch (sortKey.value) {
+        case "name":
+          aVal = a.name.toLowerCase()
+          bVal = b.name.toLowerCase()
+          break
+
+        case "category":
+          aVal = a.category?.name || ""
+          bVal = b.category?.name || ""
+          break
+
+        case "price":
+          aVal = a.total_price || 0
+          bVal = b.total_price || 0
+          break
+
+        case "status":
+          aVal = a.is_active ? 1 : 0
+          bVal = b.is_active ? 1 : 0
+          break
+
+        default:
+          return 0
+      }
+
+      if (aVal < bVal) return sortOrder.value === "asc" ? -1 : 1
+      if (aVal > bVal) return sortOrder.value === "asc" ? 1 : -1
+      return 0
+    })
+  })
+
+
     const paginatedServices = computed(() => {
       const start = (currentPage.value - 1) * pageSize.value
-      return filteredServices.value.slice(start, start + pageSize.value)
+      return sortedServices.value.slice(start, start + pageSize.value)
     })
 
     const totalPages = computed(() => {
@@ -157,13 +209,38 @@
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light">
             <tr>
-              <th>Name</th>
-              <th>Category</th>
-              <th class="text-end">Price</th>
-              <th>Status</th>
+              <th @click="toggleSort('name')" style="cursor:pointer">
+                Name
+                <span v-if="sortKey === 'name'">
+                  {{ sortOrder === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+
+              <th @click="toggleSort('category')" style="cursor:pointer">
+                Category
+                <span v-if="sortKey === 'category'">
+                  {{ sortOrder === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+
+              <th class="text-end" @click="toggleSort('price')" style="cursor:pointer">
+                Price
+                <span v-if="sortKey === 'price'">
+                  {{ sortOrder === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+
+              <th @click="toggleSort('status')" style="cursor:pointer">
+                Status
+                <span v-if="sortKey === 'status'">
+                  {{ sortOrder === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+
               <th class="text-end">Actions</th>
             </tr>
           </thead>
+
 
           <tbody>
             <tr v-if="paginatedServices.length === 0">

@@ -58,11 +58,11 @@
     const loadServiceCategories = async () => {
         const res = await api.get("/service-categories");
 
-        // DEBUG
-        console.table(res.data.map(c => ({
-            name: c.name,
-            is_deleted: c.is_deleted
-            })));
+        // // DEBUG
+        // console.table(res.data.map(c => ({
+        //     name: c.name,
+        //     is_deleted: c.is_deleted
+        //     })));
 
         serviceCategories.value = (res.data ?? []).filter(c => !c.is_deleted);
     }

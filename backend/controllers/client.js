@@ -1,33 +1,45 @@
 const Client = require('../models/Client');
-const Employee = require('../models/Employee')
+const Employee = require('../models/Employee');
+const generateFMHCode = require('../utils/generateFMHCode');
 
 /**
  * CREATE CLIENT (Admin only)
  */
 exports.createClient = async (req, res) => {
   try {
-    const { user_id, occupation, notes } = req.body;
 
+    // note: assign values from requesting procedure (eg. postman body, or frontend payload)
+    const { user_id, occupation, notes } = req.body; 
+
+    // note: ensures that user_id is provided
     if (!user_id) {
       return res.status(400).json({ message: 'user_id is required' });
     }
 
     // 🚫 BLOCK: user is an employee
     const existingEmployee = await Employee.findOne({
-      user_id,
-      date_retired: null
-    })
+      user_id
+      // ,date_retired: null
+    });
 
     if (existingEmployee) {
       return res.status(400).json({
         message: 'User is an employee and cannot be a client'
-      })
+      });
     }
 
-    const client = await Client.create({
+    // note: generate FMH client code
+    const clientCode = await generateFMHCode({
+      type: 'client',
+      branch: 'DVO'
+    });
+
+    
+    const client = await Client.create({      
       user_id,
       occupation,
-      notes
+      notes,
+      client_code: clientCode,
     });
 
     res.status(201).json({

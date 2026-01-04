@@ -116,6 +116,11 @@ const employeeSchema = new mongoose.Schema(
     credentials: {
       type: [credentialSchema],
       default: [] 
+    },    
+    employee_code: {
+      type: String,
+      unique: true,
+      index: true
     }
   },    
   {

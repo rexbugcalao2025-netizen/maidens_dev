@@ -54,8 +54,13 @@ const clientSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
       index: true
+    },    
+    client_code: {
+      type: String,
+      unique: true,
+      index: true
     }
-  },
+  },   
   {
     collection: 'clients',
     timestamps: true
