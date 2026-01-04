@@ -25,7 +25,8 @@
     const loadServices = async () => {
     try {
         const res = await api.get("/services/admin/all")
-        services.value = res.data ?? []
+        services.value = res.data ?? []        
+
     } catch {
         notyf.error("Failed to load services")
     }
@@ -34,7 +35,7 @@
     const loadCategories = async () => {
     try {
         const res = await api.get("/service-categories")
-        categories.value = res.data ?? []
+        categories.value = (res.data ?? []).filter(c => !c.is_deleted)        
     } catch {
         notyf.error("Failed to load categories")
     }
@@ -42,32 +43,32 @@
 
     /* FILTERS */
     watch([search, filterCategory, filterStatus], () => {
-    currentPage.value = 1
+      currentPage.value = 1
     })
 
-    const filteredServices = computed(() => {
-    return services.value.filter(s => {
-        const matchesSearch =
-        !search.value ||
-        s.name.toLowerCase().includes(search.value.toLowerCase())
+    const filteredServices = computed(() => {      
 
-        const matchesCategory =
-        !filterCategory.value ||
-        s.category_id === filterCategory.value ||
-        s.category?._id === filterCategory.value
+      return services.value.filter(s => {
+          const matchesSearch =
+          !search.value ||
+          s.name.toLowerCase().includes(search.value.toLowerCase())        
 
-        const matchesStatus =
-        !filterStatus.value ||
-        (filterStatus.value === "active" && !s.is_deleted) ||
-        (filterStatus.value === "archived" && s.is_deleted)
+          const matchesCategory =
+          !filterCategory.value ||
+          s.category?.id === filterCategory.value
 
-        return matchesSearch && matchesCategory && matchesStatus
-    })
+          const matchesStatus =
+          !filterStatus.value ||
+          (filterStatus.value === "active" && s.is_active) ||
+          (filterStatus.value === "archived" && !s.is_active)
+
+          return matchesSearch && matchesCategory && matchesStatus
+      })
     })
 
     const paginatedServices = computed(() => {
-    const start = (currentPage.value - 1) * pageSize.value
-    return filteredServices.value.slice(start, start + pageSize.value)
+      const start = (currentPage.value - 1) * pageSize.value
+      return filteredServices.value.slice(start, start + pageSize.value)
     })
 
     const totalPages = computed(() => {
@@ -173,7 +174,12 @@
 
             <tr v-for="s in paginatedServices" :key="s._id">
               <td>{{ s.name }}</td>
-              <td>{{ s.category?.name || "—" }}</td>
+              <td>
+                {{ s.category?.name }}
+                <span v-if="s.sub_category?.name" class="text-muted">
+                  / {{ s.sub_category.name }}
+                </span>
+              </td>
 
               <td class="text-end">
                 {{ (s.total_price ?? 0).toLocaleString() }} Php
@@ -182,9 +188,9 @@
               <td>
                 <span
                   class="badge"
-                  :class="s.is_deleted ? 'bg-secondary' : 'bg-success'"
+                  :class="s.is_active ? 'bg-primary': 'bg-secondary'"
                 >
-                  {{ s.is_deleted ? "Archived" : "Active" }}
+                  {{ s.is_active ? "Active" : "Archived" }}
                 </span>
               </td>
 
@@ -198,20 +204,6 @@
                 >
                   <i class="bi bi-eye"></i>
                 </router-link>
-
-                <!-- <router-link
-                  :to="`/admin/services/${s._id}/edit`"
-                  class="btn btn-sm btn-outline-primary me-2"
-                >
-                  <i class="bi bi-pencil"></i>
-                </router-link>
-
-                <button
-                  class="btn btn-sm btn-outline-danger"
-                  @click="archiveService(s)"
-                >
-                  <i class="bi bi-trash"></i>
-                </button> -->
               </td>
             </tr>
           </tbody>

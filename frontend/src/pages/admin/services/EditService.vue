@@ -15,13 +15,7 @@
   const loadService = async () => {
     try {
 
-      // DEBUG
-      console.log(`service id: ${serviceId}`);
-
       const res = await api.get(`/services/${serviceId}`)
-
-      // DEBUG
-      console.log(res.data);
 
       service.value = res.data
     } catch {

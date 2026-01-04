@@ -20,7 +20,7 @@ LOAD SERVICE
 const loadService = async () => {
   try {
     const res = await api.get(`/services/${route.params.id}`)
-    service.value = res.data
+    service.value = res.data    
   } catch (err) {
     console.error(err)
     notyf.error("Failed to load service")
