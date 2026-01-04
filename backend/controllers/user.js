@@ -15,23 +15,29 @@ const SALT_ROUNDS = 10;
  */
 exports.register = async (req, res) => {
   try {
+    // note: receive data from request procedure (eg. Postman body or frontend payload)
     const { email, password } = req.body;
 
+    // note: ensure that password is not empty or null
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
+    // note: ensure that email provided is available for registration.
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({ message: 'Email already exists' });
     }
 
+    // note: encrypt password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // note: create user record
     const user = await User.create({
       email,
       password: hashedPassword
     });
+
 
     const accessToken = createAccessToken(user);
 
@@ -62,6 +68,9 @@ exports.login = async (req, res) => {
       email,
       is_deleted: false
     }).select('+password');
+    
+    //note: .select('+password') tells mongoose to include the password as one of the returned field.
+    //      by default passwords are not included.
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: 'Invalid credentials' });
