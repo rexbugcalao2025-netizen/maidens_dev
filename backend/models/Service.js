@@ -78,10 +78,22 @@ const serviceSchema = new mongoose.Schema(
 
     },
 
-    duration_in_minutes: {
+    // duration_in_minutes: {
+    //   type: Number,
+    //   min: 1,
+    //   required: true
+    // },
+
+    duration: {
       type: Number,
       min: 1,
       required: true
+    },
+
+    duration_unit: {
+      type: String,
+      required: true,
+      enum: ['minute', 'hour', 'day']
     },
 
     labor_price: {

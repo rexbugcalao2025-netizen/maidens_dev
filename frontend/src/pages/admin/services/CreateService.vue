@@ -39,8 +39,9 @@
         sub_category_id: "",
         description: "",
         labor_price: null,
-        total_price: null,
-        duration_in_minutes: null,
+        total_price: null, // UI-only (warning / preview)
+        duration: 1,
+        duration_unit: "minute",
         date_offered: "",
         date_ended: "",
         materials: [] // { product_id, quantity, price, subTotal }
@@ -143,13 +144,17 @@
     COMPUTED — ENABLE / DISABLE SAVE BUTTON
     ======================= */
     const isValid = computed(() => {
+
+        const hasDuration = computed(() => {
+            ['minute', 'hour', 'day'].includes(form.value.duration_unit);
+        });
+
         const hasLabor =
-            Number(form.value.labor_price) > 0 &&
-            Number(form.value.duration_in_minutes) > 0
+            Number(form.value.labor_price) > 0;
 
         const hasMaterials =
             Array.isArray(form.value.materials) &&
-            form.value.materials.length > 0
+            form.value.materials.length > 0;
 
         return (
             form.value.name?.trim() &&
@@ -157,7 +162,7 @@
             Number(form.value.total_price) > 0 &&
             form.value.date_offered &&
             (hasLabor || hasMaterials)
-        )
+        );
     })
 
     /* =======================
@@ -247,7 +252,8 @@
             description: form.value.description,
             category_id: form.value.category_id,
             sub_category_id: form.value.sub_category_id,
-            duration_in_minutes: Number(form.value.duration_in_minutes),
+            duration: Number(form.value.duration),
+            duration_unit: form.value.duration_unit,
             total_price: Number(form.value.total_price),
             labor_price: Number(form.value.labor_price),
             materials: Array.isArray(form.value.materials)
@@ -320,7 +326,7 @@
             <input 
                 type="number" 
                 v-model="form.total_price" 
-                class="form-control" 
+                class="form-control"                 
                 :class="{ 'is-warning': isBelowCost }"
             />
 
@@ -371,14 +377,27 @@
           </div>
 
             <div class="col-md-6">
-            <label class="form-label">Duration* <span class="text-muted">(in minutes)</span></label>
-            <input
-                type="number"
-                min="1"
-                v-model="form.duration_in_minutes"
-                class="form-control"
-                placeholder="e.g. 60"
-            />
+                <label class="form-label">Duration*</label>
+                <div class="d-flex  gap-2">
+
+                    <input
+                        type="number"
+                        min="1"
+                        v-model="form.duration"
+                        class="form-control"
+                        placeholder="e.g. 1"
+                     />                   
+
+                    <select
+                        v-model="form.duration_unit"
+                        class="form-select"
+                    >
+                        <option value="minute">Minutes</option>
+                        <option value="hour">Hours</option>
+                        <option value="day">Days</option>
+                    </select>   
+
+                </div>                       
             </div>
 
           <div class="col-md-12">

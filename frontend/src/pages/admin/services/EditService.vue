@@ -24,15 +24,48 @@
     }
   }
 
+  // const updateService = async (payload) => {
+  //   try {
+  //     await api.put(`/services/${serviceId}`, payload)
+  //     notyf.success("Service updated")
+  //     router.push(`/admin/services/${serviceId}`)
+  //   } catch {
+  //     notyf.error("Failed to update service")
+  //   }
+  // }
+
   const updateService = async (payload) => {
     try {
-      await api.put(`/services/${serviceId}`, payload)
+      const {
+        name,
+        description,
+        duration,
+        duration_unit,
+        labor_price,
+        materials,
+        date_ended
+      } = payload
+
+      const cleanPayload = {
+        name,
+        description,
+        duration,
+        duration_unit,
+        labor_price,
+        materials,
+        date_ended
+      }
+
+      await api.put(`/services/${serviceId}`, cleanPayload)
+
       notyf.success("Service updated")
       router.push(`/admin/services/${serviceId}`)
-    } catch {
+    } catch (err) {
+      console.error(err)
       notyf.error("Failed to update service")
     }
   }
+
 
   onMounted(loadService)
 </script>

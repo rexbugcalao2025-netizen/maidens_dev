@@ -130,6 +130,18 @@
     )
     })
 
+  const formatDuration = (duration, unit) => {
+    if (!duration || !unit) return "—"
+
+    const labels = {
+      minute: duration === 1 ? "min" : "mins",
+      hour: duration === 1 ? "hr" : "hrs",
+      day: duration === 1 ? "day" : "days"
+    }
+
+    return `${duration} ${labels[unit]}`
+  }
+
     /* ACTIONS */
     const archiveService = async (service) => {
     if (!confirm(`Archive "${service.name}"?`)) return
@@ -223,6 +235,10 @@
                 </span>
               </th>
 
+              <th>
+                Duration
+              </th>
+
               <th class="text-end" @click="toggleSort('price')" style="cursor:pointer">
                 Price
                 <span v-if="sortKey === 'price'">
@@ -256,6 +272,10 @@
                 <span v-if="s.sub_category?.name" class="text-muted">
                   / {{ s.sub_category.name }}
                 </span>
+              </td>
+
+              <td>
+                {{ formatDuration(s.duration, s.duration_unit) }}
               </td>
 
               <td class="text-end">

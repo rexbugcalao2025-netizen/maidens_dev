@@ -24,7 +24,7 @@ async function generateFMHCode({type, branch}){
     const typeLetter = type === 'client' ? 'C': 'E';
     const paddedSeq = String(counter.seq).padStart(5,'0');
 
-    return(`FMF${typeLetter}-${branch}-${paddedSeq}`);
+    return(`FMH${typeLetter}-${branch}-${paddedSeq}`);
 }
 
 module.exports = generateFMHCode;

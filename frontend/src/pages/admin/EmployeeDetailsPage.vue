@@ -66,6 +66,9 @@ const loadEmployee = async () => {
     const empRes = await api.get(`/employees/${route.params.id}`);
     employee.value = empRes.data;
 
+    // DEBUG
+    console.log(empRes.data);
+
     const userId =
       employee.value.user_id._id || employee.value.user_id;
 
@@ -282,7 +285,7 @@ const removeCredential = async (credId) => {
         <!-- HEADER -->
         <h4 class="mb-4">
           <i class="bi bi-person-badge me-2"></i>
-          Employee Details
+          Employee Details - {{ employee.employee_code ?  employee.employee_code : 'No Code'}}
         </h4>
 
         <!-- PROFILE -->

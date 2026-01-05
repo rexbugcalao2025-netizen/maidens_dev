@@ -73,6 +73,21 @@
     return service.value && service.value.is_active
   })
 
+  const formattedDuration = computed(() => {
+    if (!service.value) return "—"
+
+    const { duration, duration_unit } = service.value
+    if (!duration || !duration_unit) return "—"
+
+    const labels = {
+      minute: duration === 1 ? "min" : "mins",
+      hour: duration === 1 ? "hr" : "hrs",
+      day: duration === 1 ? "day" : "days"
+    }
+
+    return `${duration} ${labels[duration_unit]}`
+  })
+
   /* =======================
   MOUNT
   ======================= */
@@ -132,7 +147,7 @@
           <div class="col-md-6">
             <label class="form-label">Duration</label>
             <div class="fw-semibold">
-              {{ service.duration_in_minutes }} minutes
+              {{formattedDuration }} 
             </div>
           </div>
 

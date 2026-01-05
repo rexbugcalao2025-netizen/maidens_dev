@@ -274,9 +274,20 @@ const saveNotes = async () => {
    IDENTIFY IF USER IS A CLIENT OR EMPLOYEE
    ====================== */
 const detailsTitle = computed(() => {
-  if (client && isEmployee === false) return 'Client Details'
-  if (isEmployee === true) return 'Employee Details'
-  return 'User Details'
+
+  console.log(client);
+  console.log(client.value.client_code);
+
+  let userTitle = String;
+
+  if (client.value.client_code) {
+    userTitle = `Client Details - ${client.value.client_code}`
+  } else {
+    userTitle = 'User Details';
+  };
+  
+  return userTitle;
+
 })
 
 const resolvedRole = computed(() => {

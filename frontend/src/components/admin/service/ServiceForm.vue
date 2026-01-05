@@ -35,9 +35,10 @@
     description: "",
     category_id: "",
     sub_category_id: "",
-    duration_in_minutes: null,
+    duration: 1,
+    duration_unit: 'minute',
     labor_price: null,
-    total_price: null,
+    total_price: null, // kept for display only
     date_offered: "",
     date_ended: null,
     materials: []
@@ -147,13 +148,17 @@
   VALIDATION
   ======================= */
   const isValid = computed(() => {
+
+    const hasDuration = 
+      Number(form.value.duration) > 0 &&
+      ['minute', 'hour', 'day'].includes(form.value.duration_unit);
+
     const hasLabor =
-      Number(form.value.labor_price) > 0 &&
-      Number(form.value.duration_in_minutes) > 0
+      Number(form.value.labor_price) > 0;
 
     const hasMaterials =
       Array.isArray(form.value.materials) &&
-      form.value.materials.length > 0
+      form.value.materials.length > 0;
 
     return (
       form.value.name?.trim() &&
@@ -161,7 +166,8 @@
       Number(form.value.total_price) > 0 &&
       form.value.date_offered &&
       (hasLabor || hasMaterials)
-    )
+    );
+
   })
 
   const isBelowCost = computed(() =>
@@ -271,8 +277,28 @@
           </div>
 
           <div class="col-md-4">
-            <label class="form-label">Duration (minutes)</label>
-            <input type="number" v-model.number="form.duration_in_minutes" class="form-control" />
+            <label class="form-label">Duration</label>
+
+            <div class="d-flex gap-2">
+              <input 
+                type="number" 
+                min="1"
+                v-model.number="form.duration" 
+                class="form-control" 
+              />
+
+              <select
+                v-model="form.duration_unit"
+                class="form-select"
+              >
+            
+                <option value="minute">Minutes</option>
+                <option value="hour">Hours</option>
+                <option value="day">Days</option>
+                
+              </select>
+            
+            </div>
           </div>
 
           <div class="col-md-4">

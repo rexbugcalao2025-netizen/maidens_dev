@@ -10,8 +10,9 @@ module.exports.createService = async (req, res) => {
       name,
       description,
       category_id,
-      sub_category_id,
-      duration_in_minutes,
+      sub_category_id,      
+      duration,
+      duration_unit,
       total_price,
       labor_price,
       materials,
@@ -50,8 +51,9 @@ module.exports.createService = async (req, res) => {
         id: subCategory._id,
         name: subCategory.name,
         is_deleted: subCategory.is_deleted
-      },
-      duration_in_minutes,
+      },      
+      duration,
+      duration_unit,
       labor_price,
       total_price,
       date_offered,
@@ -139,20 +141,26 @@ module.exports.updateService = async (req, res) => {
     // -- Updates dont include categories and sub-categories
     // -- Retire the existing Service and create a new one with chosen category and sub-category
 
-    const allowedUpdates = (
-      ({ name, description, duration_in_minutes, labor_price, materials, date_ended }) => ({
-        name,
-        description,        
-        duration_in_minutes,
-        labor_price,
-        materials,
-        date_ended
-      })
-    )(req.body);
+    const allowedFields = [
+      "name",
+      "description",
+      "duration",
+      "duration_unit",
+      "labor_price",
+      "materials",
+      "date_ended"
+    ];
+
+    const updates = {};
+    allowedFields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
+    });
 
     const updatedService = await Service.findByIdAndUpdate(
       req.params.serviceId,
-      allowedUpdates,
+      updates,
       { new: true, runValidators: true }
     );
 
