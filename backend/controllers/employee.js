@@ -80,10 +80,10 @@ exports.getEmployees = async (req, res) => {
     })
       .populate(
         'user_id',
-        'email full_name first_name last_name is_deleted'
+        'email full_name first_name last_name is_deleted is_admin'
       )
 
-    // Normalize response (same pattern as Clients)
+      // Normalize response (same pattern as Clients)
     const normalized = employees.map(emp => {
       const obj = emp.toObject()
       return {
