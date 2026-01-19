@@ -1,10 +1,16 @@
 const jwt = require('jsonwebtoken');
+const User = require('./models/User');
 require('dotenv').config();
 
 const JWT_SECRET = process.env.JWT_SKEY;
+const REFRESH_SECRET = process.env.JWT_REFRESH_SKEY;
 
 if (!JWT_SECRET) {
-    throw new Error("Missing JWT_SKEY in .env");
+    throw new Error('Missing JWT_SKEY in .env');
+}
+
+if (!REFRESH_SECRET){
+    throw new Error('Missing JWT_REFRESH_KEY in .env');
 }
 
 /*
@@ -18,9 +24,64 @@ module.exports.createAccessToken = (user) => {
     };
 
     return jwt.sign(payload, JWT_SECRET, {
-        expiresIn: '1h'               // <-- Add expiry
+        expiresIn: '15m'     
     });
 };
+
+/*
+   Create Refresh Token
+*/ 
+module.exports.createRefreshToken = (user) => {
+    return jwt.sign(
+        { id: user._id },
+        REFRESH_SECRET,
+        { expiresIn: '14d' }
+    );
+}
+
+/*
+   /auth/refresh endpoint
+*/ 
+module.exports.refreshToken = async (req, res) => {
+    try {
+
+        const token = req.cookies?.refreshToken;
+
+        if (!token) {
+            return res.status(401)
+                .json({ message: "No refresh token" });
+        }
+
+        
+        // ✅ Verify refresh token (PROMISIFIED)
+        const decoded = await new Promise((resolve, reject) => {
+            jwt.verify(token, REFRESH_SECRET, (err, decoded) => {
+                if (err) reject(err);
+                else resolve(decoded);
+            });
+        });
+
+        // 🔑 ALWAYS reload full user
+        const user = await User.findById(decoded.id);
+        if (!user) {
+            return res.status(401)
+                .json({ message: 'User no longer exists' });
+        }
+
+        // ✅ Issue NEW access token
+        // const accessToken = createAccessToken({ _id: decoded.id });
+        const accessToken = module.exports.createAccessToken(user);
+        res.json({ accessToken });
+
+
+    } catch (err) {
+        console.error('Refresh token error:', err);
+        return res.status(500)
+            .json({ message: 'Failed to refresh token' });
+    }
+    
+}
+
 
 /*
     Middleware: Verify Token

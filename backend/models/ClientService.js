@@ -133,6 +133,7 @@ const clientServiceSchema = new mongoose.Schema(
     }
   },
   {
+    collection: 'client_services',
     timestamps: true
   }
 );

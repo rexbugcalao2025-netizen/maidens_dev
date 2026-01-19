@@ -1,63 +1,103 @@
 <script setup>
-    import { ref, onMounted, computed, watch } from "vue"
-    import { useRouter } from "vue-router"
-    import api from "@/api"
-    import { Notyf } from "notyf"
-
-    
-
-    const router = useRouter()
-    const notyf = new Notyf()
+    import { ref, onMounted, computed, watch } from "vue";    
+    import api from "@/api";
+    import notyf from '@/utils/notyf';
 
     /* STATE */
-    const services = ref([])
-    const categories = ref([])
+    const services = ref([]);
+    const categories = ref([]);
+    const subCategories = ref([]);
+    const filterSubCategory = ref("");
+    const loadingSubCategories = ref(false);
 
-    const search = ref("")
-    const filterCategory = ref("")
-    const filterStatus = ref("")
+    const search = ref("");
+    const filterCategory = ref("");
+    const filterStatus = ref("");
 
     /* PAGINATION */
-    const currentPage = ref(1)
-    const pageSize = ref(10)
+    const currentPage = ref(1);
+    const pageSize = ref(10);
 
     /* SORTING */
-    const sortKey = ref("")      // e.g. "name", "price"
-    const sortOrder = ref("asc") // "asc" | "desc"
+    const sortKey = ref("");      // e.g. "name", "price"
+    const sortOrder = ref("asc"); // "asc" | "desc"
 
     const toggleSort = (key) => {
       if (sortKey.value === key) {
-        sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc"
+        sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
       } else {
-        sortKey.value = key
-        sortOrder.value = "asc"
+        sortKey.value = key;
+        sortOrder.value = "asc";
       }
+      currentPage.value = 1;
     }
 
 
     /* LOADERS */
     const loadServices = async () => {
-    try {
-        const res = await api.get("/services/admin/all")
-        services.value = res.data ?? []        
+      try {
+          const res = await api.get("/services/admin/all");
+          services.value = res.data ?? [];        
 
-    } catch {
-        notyf.error("Failed to load services")
-    }
+      } catch {
+          notyf.error("Failed to load services");
+      }
     }
 
     const loadCategories = async () => {
-    try {
-        const res = await api.get("/service-categories")
-        categories.value = (res.data ?? []).filter(c => !c.is_deleted)        
-    } catch {
-        notyf.error("Failed to load categories")
-    }
+      try {
+          const res = await api.get("/service-categories");
+          categories.value = (res.data ?? []).filter(c => !c.is_deleted);
+      } catch {
+          notyf.error("Failed to load categories");
+      }
     }
 
+    const loadSubCategoriesByCategory = async (categoryId) => {
+      
+      if(!categoryId) {
+        subCategories.value=[];
+        return;
+      }
+
+      loadingSubCategories.value = true;
+
+      try {
+        const res = await api.get(`/service-categories/${categoryId}`);      
+
+        subCategories.value = (res.data?.sub_categories ?? [])
+          .filter(sc => !sc.is_deleted);
+
+      } catch {
+        notyf.error('Failed to load sub-categories');
+        subCategories.value = [];        
+
+      } finally {
+        loadingSubCategories.value = false;
+      }
+
+    }
+    
+
     /* FILTERS */
-    watch([search, filterCategory, filterStatus], () => {
+    watch([search, filterStatus], () => {
       currentPage.value = 1
+    })
+
+    watch(pageSize, () => {
+      currentPage.value = 1
+    })
+
+    watch(filterCategory, async (newCategory) => {
+      filterSubCategory.value = '';
+      currentPage.value = 1;
+
+      if (!newCategory){
+        subCategories.value = [];
+        return;
+      }
+
+      await loadSubCategoriesByCategory(newCategory);
     })
 
   const filteredServices = computed(() => {      
@@ -65,18 +105,25 @@
       return services.value.filter(s => {
           const matchesSearch =
           !search.value ||
-          s.name.toLowerCase().includes(search.value.toLowerCase())        
+          s.name.toLowerCase().includes(search.value.toLowerCase());        
 
           const matchesCategory =
           !filterCategory.value ||
-          s.category?.id === filterCategory.value
+          s.category?.id === filterCategory.value;
+
+          const matchesSubCategory = 
+          !filterSubCategory.value ||
+          s.sub_category?.id === filterSubCategory.value;
 
           const matchesStatus =
           !filterStatus.value ||
           (filterStatus.value === "active" && s.is_active) ||
-          (filterStatus.value === "archived" && !s.is_active)
+          (filterStatus.value === "archived" && !s.is_active);
 
-          return matchesSearch && matchesCategory && matchesStatus
+          return (matchesSearch && 
+                  matchesCategory && 
+                  matchesSubCategory &&
+                  matchesStatus)
       })
     })
 
@@ -143,21 +190,21 @@
   }
 
     /* ACTIONS */
-    const archiveService = async (service) => {
-    if (!confirm(`Archive "${service.name}"?`)) return
+    // const archiveService = async (service) => {
+    // if (!confirm(`Archive "${service.name}"?`)) return
 
-    try {
-        await api.patch(`/services/${service._id}/archive`)
-        notyf.success("Service archived")
-        loadServices()
-    } catch {
-        notyf.error("Failed to archive service")
-    }
-    }
+    // try {
+    //     await api.patch(`/services/${service._id}/archive`)
+    //     notyf.success("Service archived")
+    //     loadServices()
+    // } catch {
+    //     notyf.error("Failed to archive service")
+    // }
+    // }
 
     onMounted(() => {
-    loadCategories()
-    loadServices()
+      loadCategories();
+      loadServices();
     })
 </script>
 
@@ -182,6 +229,23 @@
             {{ c.name }}
           </option>
         </select>
+
+        <!-- FILTER: SUB-CATEGORY -->
+         <select 
+            v-model="filterSubCategory"
+            class="form-select form-select-sm"
+            style="width: 220px"
+            :disabled="!filterCategory || loadingSubCategories"
+         >
+            <option value="">All Sub-Categories</option>
+            <option 
+              v-for="sc in subCategories"
+              :key="sc._id"
+              :value="sc._id"
+            >
+              {{ sc.name }}
+            </option>
+         </select>
 
         <!-- FILTER: STATUS -->
         <select
@@ -223,16 +287,21 @@
             <tr>
               <th @click="toggleSort('name')" style="cursor:pointer">
                 Name
-                <span v-if="sortKey === 'name'">
-                  {{ sortOrder === 'asc' ? '▲' : '▼' }}
-                </span>
+                <i
+                  v-if="sortKey === 'name'"
+                  :class="sortOrder === 'asc' ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill'"
+                  class="ms-1"
+                ></i>
+
               </th>
 
               <th @click="toggleSort('category')" style="cursor:pointer">
                 Category
-                <span v-if="sortKey === 'category'">
-                  {{ sortOrder === 'asc' ? '▲' : '▼' }}
-                </span>
+                <i
+                  v-if="sortKey === 'category'"
+                  :class="sortOrder === 'asc' ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill'"
+                  class="ms-1"
+                ></i>
               </th>
 
               <th>
@@ -241,16 +310,20 @@
 
               <th class="text-end" @click="toggleSort('price')" style="cursor:pointer">
                 Price
-                <span v-if="sortKey === 'price'">
-                  {{ sortOrder === 'asc' ? '▲' : '▼' }}
-                </span>
+                <i
+                  v-if="sortKey === 'price'"
+                  :class="sortOrder === 'asc' ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill'"
+                  class="ms-1"
+                ></i>
               </th>
 
               <th @click="toggleSort('status')" style="cursor:pointer">
                 Status
-                <span v-if="sortKey === 'status'">
-                  {{ sortOrder === 'asc' ? '▲' : '▼' }}
-                </span>
+                <i
+                  v-if="sortKey === 'status'"
+                  :class="sortOrder === 'asc' ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill'"
+                  class="ms-1"
+                ></i>
               </th>
 
               <th class="text-end">Actions</th>
@@ -260,8 +333,8 @@
 
           <tbody>
             <tr v-if="paginatedServices.length === 0">
-              <td colspan="5" class="text-center text-muted py-4">
-                No services found
+              <td colspan="6" class="text-center text-muted py-4">
+                No services match your filters
               </td>
             </tr>
 
@@ -285,7 +358,7 @@
               <td>
                 <span
                   class="badge"
-                  :class="s.is_active ? 'bg-primary': 'bg-secondary'"
+                  :class="s.is_active ? 'bg-success': 'bg-secondary'"
                 >
                   {{ s.is_active ? "Active" : "Archived" }}
                 </span>
@@ -328,8 +401,13 @@
 
       <nav>
         <ul class="pagination pagination-sm mb-0">
-          <li class="page-item" :class="{ disabled: currentPage === 1 }">
-            <button class="page-link" @click="currentPage--">‹</button>
+          <li class="page-item" :class="{ disabled: currentPage === 1 }">            
+            <button
+              class="page-link"
+              @click="currentPage = Math.max(1, currentPage - 1)"
+            >
+              ‹
+            </button>
           </li>
 
           <li
@@ -347,7 +425,12 @@
             class="page-item"
             :class="{ disabled: currentPage === totalPages }"
           >
-            <button class="page-link" @click="currentPage++">›</button>
+            <button
+              class="page-link"
+              @click="currentPage = Math.min(totalPages, currentPage + 1)"
+            >
+              ›
+            </button>
           </li>
         </ul>
       </nav>

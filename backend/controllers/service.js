@@ -32,8 +32,6 @@ module.exports.createService = async (req, res) => {
       return res.status(400).json({ error: "Invalid service subcategory" });
     }
 
-    // DEBUG
-    console.log(`req.user.id: ${req.user.id}`);
 
     if (!req.user || !req.user.id) {
      return res.status(401).json({ error: "Unauthorized" });

@@ -1,11 +1,12 @@
 <script setup>
-  import { ref, watch, computed, onMounted } from "vue"
-  import { useRouter } from "vue-router"
-  import api from "@/api"
-  import { Notyf } from "notyf"
+  import { ref, watch, computed, onMounted } from "vue";
+  import { useRouter } from "vue-router";
+  import api from "@/api";
+  import { Notyf } from "notyf";
 
-  const notyf = new Notyf()
-  const router = useRouter()
+  const notyf = new Notyf();
+  const router = useRouter();
+  const isInitializing = ref(true); // initialization flag
 
   /* =======================
   PROPS / EMITS
@@ -49,11 +50,20 @@
   /* =======================
   EXTRACTING SUBCATEGORY
   ======================= */
-  const populateSubcategories = (catId) => {
-    const cat = serviceCategories.value.find(c => c._id === catId)
-    serviceSubcategories.value = cat
-      ? cat.sub_categories.filter(s => !s.is_deleted)
-      : []
+  const populateSubcategories = async (catId) => {
+
+    if(!catId){
+      serviceSubcategories.value = [];
+      return;
+    }
+
+    const res = await api.get(`/service-categories/${catId}`)
+    serviceSubcategories.value = 
+      (res.data?.sub_categories ?? []).filter(s=> !s.is_deleted);
+    // const cat = serviceCategories.value.find(c => c._id === catId)
+    // serviceSubcategories.value = cat
+    //   ? cat.sub_categories.filter(s => !s.is_deleted)
+    //   : []
   }
 
   /* =======================
@@ -61,11 +71,10 @@
   ======================= */
   watch(
     () => props.modelValue,
-    (val) => {
-      if (!val) return
+    async (val) => {
+      if (!val) return;
 
-      // DEBUG
-      console.log(val.materials);
+      isInitializing.value = true;
 
       form.value = {
         ...emptyForm,
@@ -81,6 +90,13 @@
         : null
       
       }
+
+      // 🔥 ensure sub-categories are loaded BEFORE unlock
+      if (form.value.category_id){
+        await populateSubcategories(form.value.category_id)
+      }
+
+      isInitializing.value = false;
     },
     { immediate: true }
   )
@@ -95,26 +111,29 @@
   LOADERS
   ======================= */
   const loadServiceCategories = async () => {
-    const res = await api.get("/service-categories")
-    serviceCategories.value = (res.data ?? []).filter(c => !c.is_deleted)
+    const res = await api.get("/service-categories");
+    serviceCategories.value = (res.data ?? []).filter(c => !c.is_deleted);
 
     // 🔥 FIX: populate sub-categories if editing
     if (form.value.category_id) {
-      populateSubcategories(form.value.category_id)
+      populateSubcategories(form.value.category_id);
     }
 
   }
 
   watch(
-    () => form.value.category_id,
-    (catId) => {      
+    () => form.value.category_id, 
+    async (catId, oldCatId) => {      
 
-      populateSubcategories(catId);
-      form.value.sub_category_id = "";
+      if (isInitializing.value){
+        await populateSubcategories(catId);      
+        form.value.sub_category_id = '';
+      }
+      
 
     // only reset sub-category if user actually changed category
         if (oldCatId && catId !== oldCatId) {
-          form.value.sub_category_id = ""
+          form.value.sub_category_id = "";
         }      
 
       // const cat = serviceCategories.value.find(c => c._id === catId)
@@ -189,6 +208,10 @@
     }
 
     const payload = JSON.parse(JSON.stringify(form.value))
+
+    // DEBUG
+    console.log(payload);
+
     emit("submit", payload)
   }
 
@@ -205,13 +228,26 @@
 
     <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-3">
+      <!-- TITLE LEFT -->
       <h4>Service Details</h4>
-      <button
-        class="btn btn-outline-plum"
-        @click="router.push(backTo)"
-      >
-        ← Back
-      </button>
+
+      <!-- ACTIONS (RIGHT) -->
+      <div class="d-flex gap-1">
+        <button
+          class="btn btn-outline-plum"
+          @click="router.push(backTo)"
+        >
+          ← Back
+        </button>      
+
+        <button
+          class="btn btn-outline-plum"
+          :disabled="!isValid"
+          @click="submit"
+        >
+          💾 Save
+        </button>
+      </div>
     </div>
 
     <!-- BASIC INFO -->
@@ -231,20 +267,33 @@
 
           <div class="col-md-6">
             <label class="form-label">Category</label>
-            <select v-model="form.category_id" class="form-select">
+            <!-- <select 
+              v-model="form.category_id" 
+              class="form-select"
+              :disabled="mode === 'edit'"
+              >
               <option value="">Select category</option>
               <option v-for="c in serviceCategories" :key="c._id" :value="c._id">
                 {{ c.name }}
               </option>
-            </select>
+            </select> -->
+            <input               
+              type="text"
+              class="form-control"
+              :value="form.category?.name || '-'"
+              readonly>
+
+            <small class="text-muted">
+              NOTE: Category and sub-category cannot be changed once a service is created.
+            </small>
           </div>
 
           <div class="col-md-6">
             <label class="form-label">Sub-category</label>
-            <select
+            <!-- <select
               v-model="form.sub_category_id"
               class="form-select"
-              :disabled="serviceSubcategories.length === 0"
+              :disabled="mode === 'edit'"
             >
               <option value="">Select sub-category</option>
               <option
@@ -254,7 +303,12 @@
               >
                 {{ s.name }}
               </option>
-            </select>
+            </select> -->
+            <input 
+              type="text"
+              class="form-control"
+              :value="form.sub_category?.name ||'-'"
+              readonly>
           </div>
         
           <div class="col-md-12">
@@ -347,18 +401,7 @@
         </table>
 
       </div>
-    </div>
-
-    <!-- ACTIONS -->
-    <div class="text-end">
-      <button
-        class="btn btn-outline-plum"
-        :disabled="!isValid"
-        @click="submit"
-      >
-        💾 Save Service
-      </button>
-    </div>
+    </div>   
 
   </div>
 </template>
