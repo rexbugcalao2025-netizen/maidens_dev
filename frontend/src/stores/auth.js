@@ -2,12 +2,13 @@ import { defineStore } from 'pinia';
 import api from '../api';
 import { jwtDecode } from 'jwt-decode';
 import router from '@/router';
-
+import { authChannel } from '@/utils/authChannel';
 
 const INACTIVITY_LIMIT = 15 * 60 * 1000; // 15 Minutes
-const WARNING_TIME = 14 * 60 * 1000; // 14 Minutes
+const WARNING_TIME = 60 * 1000; // 1 Minute warning
 let inactivityTimer = null;
 let warningTimer = null;
+let countdownInterval = null;
 
 
 
@@ -19,7 +20,8 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated: false,
     loading: false,
     error: null,
-    showInactivityWarning: false
+    showInactivityWarning: false,
+    countdown: 60 // 60 seconds
   }),
 
   actions: {
@@ -27,32 +29,50 @@ export const useAuthStore = defineStore('auth', {
 
     // 🔁 Start inactivity tracking
     startInactivityTimer(){
-      this.clearInactivityTimer();
+      this.clearInactivityTimers();
 
       // ⚠️ Show warning at 14 minutes
       warningTimer = setTimeout(()=>{
         this.showInactivityWarning = true;
-      }, WARNING_TIME);
+        this.startCountdown();
+      }, INACTIVITY_LIMIT - WARNING_TIME);
 
-      // 🚪 Logout at 15 minutes
-      inactivityTimer = setTimeout(() => {
-        console.warn('User inactive for 15 minutes - loggin out');
-        this.logout(true)
-      }, INACTIVITY_LIMIT);
+    },
+
+    // ♻️ Start countdown
+    startCountdown(){
+      this.countdown = 60;
+      countdownInterval = setInterval(() => {
+        this.countdown--;
+
+        if (this.countdown <= 0){
+          this.logout(true);
+        }
+      }, 1000);
     },
 
     // ♻️ Reset on activity
     resetInactivityTimer(){
       if (!this.isAuthenticated) return;
+
+      this.clearInactivityTimers();
+
+      // Hide warning if visible
+      this.showInactivityWarning = false;      
+
+      // Restart countdown + main timer
       this.startInactivityTimer();
     },
 
     // 🧹 Clear timer
-    clearInactivityTimer(){
-      if (inactivityTimer){
-        clearTimeout(inactivityTimer);
-        inactivityTimer = null;
-      }
+    clearInactivityTimers(){
+      // if (inactivityTimer) clearTimeout(inactivityTimer);
+      if (warningTimer) clearTimeout(warningTimer);
+      if (countdownInterval) clearInterval(countdownInterval);
+
+      // inactivityTimer = null;
+      warningTimer = null;
+      countdownInterval = null;
     },
 
     // REGISTER
@@ -76,21 +96,21 @@ export const useAuthStore = defineStore('auth', {
 
     // RESTORE SESSION
     restoreSession() {
-      const token = localStorage.getItem('accessToken')
-      if (!token) return
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
 
       try {
-        const decoded = jwtDecode(token)
+        const decoded = jwtDecode(token);
 
         // Optional: check expiry
         const now = Date.now() / 1000
         if (decoded.exp && decoded.exp < now) {
-          this.logout()
+          this.logout();
           return
         }
 
-        this.isAuthenticated = true
-        this.role = decoded.isAdmin ? 'admin' : 'user'
+        this.isAuthenticated = true;
+        this.role = decoded.isAdmin ? 'admin' : 'user';
 
         // Minimal user restore (safe)
         this.user = {
@@ -145,9 +165,9 @@ export const useAuthStore = defineStore('auth', {
 
 
     // LOGOUT
-    logout(isAuto = false) {
+    logout(isAuto = false, silent = false) {
 
-      this.clearInactivityTimer();
+      this.clearInactivityTimers();
       this.showInactivityWarning = false;
 
       this.user = null;
@@ -157,9 +177,18 @@ export const useAuthStore = defineStore('auth', {
 
       localStorage.removeItem('accessToken');
 
-      if (isAuto){
-        router.push('/login');
+      // 🔔 MULTI-TAB SYNC --- closes all tabs when logged out
+      if (!silent){
+
+
+          localStorage.setItem('auth-event', JSON.stringify({
+            type: 'LOGOUT',
+            time: Date.now()
+          }));        
       }
+    
+      router.push('/login');
+
     }
   }
 })

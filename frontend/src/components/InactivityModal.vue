@@ -49,7 +49,7 @@
 
                     <div class="modal-body">
                         <p>
-                            You'll be logged out in <strong>1 minute</strong> due to inactivity.
+                            You'll be logged out in <strong>{{ auth.countdown }}</strong> seconds due to inactivity.
                         </p>
                     </div>
 
