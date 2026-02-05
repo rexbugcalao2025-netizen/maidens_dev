@@ -49,10 +49,10 @@ export async function adjustStock(data, user) {
     }
 
     // --- permission check ---
-    if (!user?.is_admin){
+    if (!user?.isAdmin){
         throw new Error ('Unauthorized stock adjustment');
     }
-
+    
     // --- delegate to DB ---
     await inventoryRepo.adjustStock({
         productId,

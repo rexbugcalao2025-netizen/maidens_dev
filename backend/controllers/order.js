@@ -1,7 +1,7 @@
 // src/controllers/order.js
 
 
-import Order from '../models/Order';
+import Order from '../models/Order.js';
 
 
 /**

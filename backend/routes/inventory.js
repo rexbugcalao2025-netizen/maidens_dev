@@ -1,7 +1,7 @@
 // src/routes/inventory.js
 
 import express from 'express';
-import * as inventoryController from '../controllers/inventory.controller.js';
+import * as inventoryController from '../src/controllers/inventory.controller.js'; // POSTGRES
 import { verify, verifyAdmin } from '../auth.js';
 
 const router = express.Router();

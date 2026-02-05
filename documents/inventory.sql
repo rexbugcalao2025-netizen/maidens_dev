@@ -65,6 +65,7 @@ CREATE OR REPLACE FUNCTION inventory.adjust_stock(
 )
 RETURNS VOID 
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS $$
 BEGIN
 	-- prevent invalid quantity
@@ -229,3 +230,6 @@ ON inventory.stock_levels,
    inventory.stock_movements
 FROM app_user;
 
+GRANT SELECT ON inventory.v_low_stock TO app_user;
+GRANT SELECT ON inventory.v_product_stock TO app_user;
+GRANT SELECT ON inventory.v_stock_movements TO app_user;

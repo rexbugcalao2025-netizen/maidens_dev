@@ -14,7 +14,7 @@ export function listProducts(){
     `;
 }
 
-export async function getProductivityById(productId) {
+export async function getProductById(productId) {
     const [product] = await sql`
         SELECT *
         FROM inventory.v_product_stock

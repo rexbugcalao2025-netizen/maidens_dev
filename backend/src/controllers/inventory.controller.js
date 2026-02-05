@@ -77,7 +77,16 @@ export async function adjustStock(req, res, next){
 
 export async function consumeStock(req, res, next){
     try {
-        await inventoryService.consumeStock(req.body, req.user);
+
+        // DEBUG
+        console.log(req.body);
+        
+        const { productId, quantity, referenceType, referenceId } = req.body;
+
+        await inventoryService.consumeStock({
+            productId, quantity, referenceType, referenceId }, 
+            req.user
+        );
 
         res.json({
             success: true,
