@@ -1,4 +1,6 @@
-const mongoose = require('mongoose');
+// src/models/ServiceCategory.js
+
+import mongoose from 'mongoose';
 
 /**
  * Sub-category sub-schema
@@ -63,4 +65,4 @@ serviceCategorySchema.pre(/^find/, function () {
   
 });
 
-module.exports = mongoose.model('ServiceCategory', serviceCategorySchema);
+export default mongoose.model('ServiceCategory', serviceCategorySchema);

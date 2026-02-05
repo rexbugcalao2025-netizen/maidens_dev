@@ -1,11 +1,13 @@
-const Cart = require('../models/Cart');
-const Product = require('../models/Product');
-const Order = require('../models/Order'); // assumed existing
+// src/controllers/cart.js
+
+import Cart from '../models/Cart.js';
+import Product from '../models/Product.js';
+import Order from '../models/Order.js'; // assumed existing
 
 /**
  * GET ACTIVE CART (or create if none)
  */
-exports.getMyCart = async (req, res) => {
+export async function getMyCart(req, res) {
   try {
     let cart = await Cart.findOne({
       user_id: req.user.id,
@@ -25,12 +27,12 @@ exports.getMyCart = async (req, res) => {
     console.error('GetCart error:', err);
     res.status(500).json({ message: 'Failed to get cart' });
   }
-};
+}
 
 /**
  * ADD ITEM TO CART
  */
-exports.addItem = async (req, res) => {
+export async function addItem (req, res) {
   try {
     const { product_id, quantity } = req.body;
 
@@ -76,12 +78,12 @@ exports.addItem = async (req, res) => {
     console.error('AddItem error:', err);
     res.status(500).json({ message: 'Failed to add item' });
   }
-};
+}
 
 /**
  * UPDATE CART ITEM QUANTITY
  */
-exports.updateItem = async (req, res) => {
+export async function updateItem (req, res) {
   try {
     const { itemId } = req.params;
     const { quantity } = req.body;
@@ -115,12 +117,12 @@ exports.updateItem = async (req, res) => {
     console.error('UpdateItem error:', err);
     res.status(500).json({ message: 'Failed to update item' });
   }
-};
+}
 
 /**
  * REMOVE ITEM FROM CART
  */
-exports.removeItem = async (req, res) => {
+export async function removeItem (req, res) {
   try {
     const { itemId } = req.params;
 
@@ -147,12 +149,12 @@ exports.removeItem = async (req, res) => {
     console.error('RemoveItem error:', err);
     res.status(500).json({ message: 'Failed to remove item' });
   }
-};
+}
 
 /**
  * CHECKOUT (CONVERT CART → ORDER)
  */
-exports.checkout = async (req, res) => {
+export async function checkout (req, res) {
   try {
     const cart = await Cart.findOne({
       user_id: req.user.id,
@@ -188,4 +190,4 @@ exports.checkout = async (req, res) => {
     console.error('Checkout error:', err);
     res.status(500).json({ message: 'Checkout failed' });
   }
-};
+}

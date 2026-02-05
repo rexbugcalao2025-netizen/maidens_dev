@@ -1,4 +1,6 @@
-const mongoose = require('mongoose');
+// src/Models/Orders.js
+
+import mongoose from 'mongoose';
 
 /**
  * Order item snapshot
@@ -130,4 +132,4 @@ orderSchema.pre(/^find/, function () {
   this.where({ is_deleted: false });
 });
 
-module.exports = mongoose.model('Order', orderSchema);
+export default mongoose.model('Order', orderSchema);

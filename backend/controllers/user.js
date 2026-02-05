@@ -1,7 +1,11 @@
-const bcrypt = require('bcrypt');
-const crypto = require('crypto');
-const User = require('../models/User');
-const { createAccessToken } = require('../auth');
+// src/controllers/user.js
+
+import bcrypt from 'bcrypt';
+import crypto from 'crypto';
+import mongoose from 'mongoose';
+
+import User from '../models/User.js';
+import { createAccessToken } from '../auth.js';
 
 
 const SALT_ROUNDS = 10;
@@ -13,7 +17,7 @@ const SALT_ROUNDS = 10;
 /**
  * REGISTER USER
  */
-exports.register = async (req, res) => {
+export async function register (req, res) {
   try {
     // note: receive data from request procedure (eg. Postman body or frontend payload)
     const { email, password } = req.body;
@@ -30,7 +34,7 @@ exports.register = async (req, res) => {
     }
 
     // note: encrypt password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
     // note: create user record
     const user = await User.create({
@@ -50,13 +54,13 @@ exports.register = async (req, res) => {
     console.error('Register error:', err);
     res.status(500).json({ message: 'Registration failed' });
   }
-};
+}
 
 
 /**
  * LOGIN USER
  */
-exports.login = async (req, res) => {
+export async function login (req, res) {
   try {
     const { email, password } = req.body;
 
@@ -87,7 +91,7 @@ exports.login = async (req, res) => {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Login failed' });
   }
-};
+}
 
 /* ============================
    USER (SELF)
@@ -96,7 +100,7 @@ exports.login = async (req, res) => {
 /**
  * GET CURRENT USER
  */
-exports.getMe = async (req, res) => {
+export async function getMe (req, res) {
   try {
     const user = await User.findOne({
       _id: req.user.id,
@@ -117,24 +121,17 @@ exports.getMe = async (req, res) => {
 /**
  * UPDATE CURRENT USER
  */
-exports.updateMe = async (req, res) => {
+export async function updateMe (req, res) {
   try {
-
-    console.log('UPDATE ME START');
-
+  
     const user = await User.findOne({
       _id: req.user.id,
       is_deleted: false
     });
 
-    console.log('USER FOUND');
-
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-
-    console.log('PHONES RECEIVED:', req.body.phones);
-
 
     // Scalar fields
     if (req.body.first_name !== undefined) user.first_name = req.body.first_name;
@@ -142,24 +139,19 @@ exports.updateMe = async (req, res) => {
     if (req.body.address !== undefined) user.address = req.body.address;
     if (req.body.gender !== undefined) user.gender = req.body.gender;
     if (req.body.date_of_birth !== undefined) user.date_of_birth = req.body.date_of_birth;
-
-    console.log('FIELDS ASSIGNED');
-
+    
     // Password
-    if (typeof req.body.password === 'string' && req.body.password.trim() !== '') {
-      console.log('PHONES ASSIGN START', req.body.phones);
-      user.password = await bcrypt.hash(req.body.password, SALT_ROUNDS);
-      console.log('PASSWORD HASHED');
+    if (typeof req.body.password === 'string' && req.body.password.trim() !== '') {      
+      user.password = await bcrypt.hash(req.body.password, SALT_ROUNDS);      
     }   
     
     // 🔥 THIS FIXES PHONE REMOVAL
     if (Array.isArray(req.body.phones)) {
       user.phones = req.body.phones;
-    }
-    
-    console.log('About to save user...');
+    } 
+
     await user.save();
-    console.log('User saved successfully');
+
 
     res.json({
       message: 'Profile updated',
@@ -183,7 +175,7 @@ exports.updateMe = async (req, res) => {
 /**
  * GET ALL USERS
  */
-exports.getUsers = async (req, res) => {
+export async function getUsers (req, res) {
   try {
     const users = await User.find({ is_deleted: false }).sort({ createdAt: -1 });
     res.json(users);
@@ -196,15 +188,17 @@ exports.getUsers = async (req, res) => {
 /**
  * ADMIN: Get user by ID
  */
-exports.getUserById = async (req, res) => {
+export async function getUserById (req, res) {
   try {
+    
+    const { id } = req.params;
 
-    const { Types } = require('mongoose')
-
-    if (!Types.ObjectId.isValid(req.params.id)) {
+    // if (!Types.ObjectId.isValid(req.params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {      
       return res.status(400).json({ message: 'Invalid user ID' })
     }
-    const user = await User.findById(req.params.id);
+    // const user = await User.findById(req.params.id);
+    const user = await User.findById(id);
 
     if (!user || user.is_deleted) {
       return res.status(404).json({ message: 'User not found' });
@@ -220,7 +214,7 @@ exports.getUserById = async (req, res) => {
 /**
  * SOFT DELETE USER
  */
-exports.deleteUser = async (req, res) => {
+export async function deleteUser (req, res) {
   try {
     const { id } = req.params;
 
@@ -239,7 +233,7 @@ exports.deleteUser = async (req, res) => {
     console.error('DeleteUser error:', err);
     res.status(500).json({ message: 'Failed to delete user' });
   }
-};
+}
 
 /* ============================
    PASSWORD RESET
@@ -248,7 +242,7 @@ exports.deleteUser = async (req, res) => {
 /**
  * REQUEST PASSWORD RESET
  */
-exports.requestPasswordReset = async (req, res) => {
+export async function requestPasswordReset (req, res) {
   try {
     const { email } = req.body;
 
@@ -287,12 +281,12 @@ exports.requestPasswordReset = async (req, res) => {
     console.error('Request reset error:', err);
     res.status(500).json({ message: 'Failed to request password reset' });
   }
-};
+}
 
 /**
  * RESET PASSWORD
  */
-exports.resetPassword = async (req, res) => {
+export async function resetPassword (req, res) {
   try {
     const { token, newPassword } = req.body;
 
@@ -330,14 +324,14 @@ exports.resetPassword = async (req, res) => {
     console.error('Reset password error:', err);
     res.status(500).json({ message: 'Failed to reset password' });
   }
-};
+}
 
 
 /*
   User add a phone information
 */ 
 
-exports.addPhone = async (req, res) => {
+export async function addPhone (req, res) {
   try {
     const { type, value } = req.body;
     if (!type || !value) return res.status(400).json({ message: "Phone type and value are required" });
@@ -359,7 +353,7 @@ exports.addPhone = async (req, res) => {
   User updates a phone information
 */ 
 
-exports.updatePhone = async (req, res) => {
+export async function updatePhone (req, res) {
   try {
     const { phoneId } = req.params;
     const { type, value } = req.body;
@@ -379,13 +373,13 @@ exports.updatePhone = async (req, res) => {
     console.error("Update phone error:", err);
     res.status(500).json({ message: "Failed to update phone" });
   }
-};
+}
 
 
 /*
   User removes a phone information
 */ 
-exports.removePhone = async (req, res) => {
+export async function removePhone (req, res) {
   try {
     const { phoneId } = req.params;
 
@@ -406,4 +400,4 @@ exports.removePhone = async (req, res) => {
     console.error("Remove phone error:", err);
     res.status(500).json({ message: "Failed to remove phone" });
   }
-};
+}

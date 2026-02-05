@@ -1,4 +1,6 @@
-const mongoose = require('mongoose');
+// src/models/ProductCategory.js
+
+import mongoose from 'mongoose';
 
 /**
  * Sub-category sub-schema
@@ -55,4 +57,4 @@ productCategorySchema.pre(/^find/, function () {
   
 });
 
-module.exports = mongoose.model('ProductCategory', productCategorySchema);
+export default mongoose.model('ProductCategory', productCategorySchema);

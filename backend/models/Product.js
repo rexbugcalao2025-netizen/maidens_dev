@@ -1,4 +1,6 @@
-const mongoose = require('mongoose');
+// src/models/Product.js
+
+import mongoose from 'mongoose';
 
 /**
  * Price History sub-schema
@@ -66,8 +68,8 @@ const productSchema = new mongoose.Schema(
 /**
  * Soft delete middleware
  */
-productSchema.pre(/^find/, function (next) {
+productSchema.pre(/^find/, function () {
   this.where({ is_deleted: false });
 });
 
-module.exports = mongoose.model('Product', productSchema);
+export default mongoose.model('Product', productSchema);

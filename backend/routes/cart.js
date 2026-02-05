@@ -1,8 +1,10 @@
-const express = require('express');
-const router = express.Router();
+// src/routes/cart
 
-const cartController = require('../controllers/cart');
-const { verify } = require('../auth');
+import express from 'express';
+import * as cartController from '../controllers/cart.js';
+import { verify } from '../auth.js';
+
+const router = express.Router();
 
 /**
  * CART ROUTES (Authenticated Users)
@@ -23,4 +25,4 @@ router.delete('/items/:itemId', verify, cartController.removeItem);
 // Checkout (convert cart → order)
 router.post('/checkout', verify, cartController.checkout);
 
-module.exports = router;
+export default router;

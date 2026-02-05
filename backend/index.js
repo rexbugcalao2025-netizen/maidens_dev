@@ -1,20 +1,21 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
 
 /*
     TODO: Add routes here
 */ 
-const userRoutes = require('./routes/user');
-const employeeRoutes = require('./routes/employee');
-const clientRoutes = require('./routes/client');
-const productRoutes = require('./routes/product');
-const productCategoryRoutes = require('./routes/productCategory');
-const cartRoutes = require ('./routes/cart');
-const orderRoutes = require('./routes/order');
-const serviceRoutes = require('./routes/service');
-const serviceCategoryRoutes = require('./routes/serviceCategory');
-const clientServiceRoutes = require('./routes/clientService');
+import userRoutes from './routes/user.js';
+import employeeRoutes from './routes/employee.js';
+import clientRoutes from './routes/client.js';
+import productRoutes from './routes/product.js';
+import productCategoryRoutes from './routes/productCategory.js';
+import cartRoutes from './routes/cart.js';
+import orderRoutes from './routes/order.js';
+import serviceRoutes from './routes/service.js';
+import serviceCategoryRoutes from './routes/serviceCategory.js';
+import clientServiceRoutes from './routes/clientService.js';
+import inventoryRoutes from './routes/inventory.js';
 
 
 require('dotenv').config();
@@ -39,6 +40,9 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+// health check (optional)
+app.get('/health',(_, res) => res.json({ ok: true}));
 
 
 /*
@@ -75,7 +79,7 @@ app.use('/orders', orderRoutes);
 app.use('/services', serviceRoutes);
 app.use('/service-categories', serviceCategoryRoutes);
 app.use('/client-services',clientServiceRoutes);
-
+app.use('/api/inventory', inventoryRoutes);
 
 /*
      Start server only if not imported by tests
@@ -83,7 +87,7 @@ app.use('/client-services',clientServiceRoutes);
 */ 
 if (require.main === module) {
     app.listen(port, () => {
-        console.log(`API is now online on port ${port}`);
+        console.log(`🚀 Server running on port ${port}`);
     })
     .on("error", (err) => {
         console.error("Failed to start server:", err);

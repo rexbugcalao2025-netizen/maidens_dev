@@ -1,13 +1,12 @@
-const express = require('express');
+// src/routes/user.js
+
+import express from 'express';
+import * as userController from '../controllers/user.js';
+import { verify, verifyAdmin } from '../auth.js';
+// import auth from '../auth.js';
+import { addPhone, updatePhone, removePhone } from '../controllers/user.js';
+
 const router = express.Router();
-
-const userController = require('../controllers/user');
-const auth = require('../auth');
-
-const { addPhone, updatePhone, removePhone } = require('../controllers/user');
-const { verify } = require('../auth');
-
-
 
 /* ============================
    AUTH (PUBLIC)
@@ -73,4 +72,4 @@ router.patch('/phones/:phoneId', verify, updatePhone); // update a phone
 router.delete('/phones/:phoneId', verify, removePhone); // remove a phone
 
 
-module.exports = router;
+export default router;

@@ -1,10 +1,12 @@
-const Service = require("../models/Service");
-const ServiceCategory = require("../models/ServiceCategory");
+// src/controllers/service.js
+
+import Service from "../models/Service.js";
+import ServiceCategory from "../models/ServiceCategory.js";
 
 /**
  * Create a new service (Admin)
  */
-module.exports.createService = async (req, res) => {
+export async function createService(req, res) {
   try {
     const {
       name,
@@ -19,8 +21,30 @@ module.exports.createService = async (req, res) => {
       date_offered,
       date_ended
     } = req.body;
-
+    
     const safeMaterials = Array.isArray(materials) ? materials : [];
+
+    if (!req.user || !req.user.id) {
+     return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    if (!name || !category_id || !sub_category_id){
+      return res.status(400).json({
+        error: 'Missing required fields'
+      });
+    }
+
+    if (typeof total_price !== 'number'){
+      return res.status(400).json({
+        error: 'Invalid total price'
+      });
+    }
+
+    if (labor_price !== undefined && typeof labor_price !== "number") {
+      return res.status(400).json({
+        error: "Invalid labor price"
+      });
+    }
 
     const categoryDoc = await ServiceCategory.findById(category_id);
     if (!categoryDoc || categoryDoc.is_deleted) {
@@ -33,10 +57,6 @@ module.exports.createService = async (req, res) => {
     }
 
 
-    if (!req.user || !req.user.id) {
-     return res.status(401).json({ error: "Unauthorized" });
-    }
-    
     const newService = new Service({
       name,
       description,
@@ -60,131 +80,199 @@ module.exports.createService = async (req, res) => {
       created_by: req.user.id
     });
 
+
     const savedService = await newService.save();
-    res.status(201).json(savedService);
+    return res.status(201).json(savedService);
 
   } catch (err) {
     console.error("CreateService error:", err);
-    res.status(400).json({
+    return res.status(500).json({
       error: "Error creating service",
       details: err.message
     });
   }
-};
+}
 
 
 
 /**
  * Get all active services (Public)
  */
-module.exports.getActiveServices = async (req, res) => {
+export async function getActiveServices(req, res) {
   try {
     const services = await Service.find({
       is_active: true
     }).sort({ createdAt: -1 });
 
-    res.status(200).send(services);
+    return res.status(200).json(services);
   } catch (err) {
-    res.status(500).send({
+    return res.status(500).json({
       error: "Error fetching services",
       details: err.message
     });
   }
-};
+}
 
 /**
  * Get all services (Admin)
  */
-module.exports.getAllServices = async (req, res) => {
+export async function getAllServices(req, res) {
   try {
     const services = await Service.find()
       .populate("created_by", "email")
       .sort({ createdAt: -1 });
 
-    res.status(200).send(services);
+    return res.status(200).json(services);
+
   } catch (err) {
-    res.status(500).send({
+    return res.status(500).json({
       error: "Error fetching services",
       details: err.message
     });
   }
-};
+}
 
 /**
  * Get single service by ID
  */
-module.exports.getServiceById = async (req, res) => {
+export async function getServiceById(req, res) {
   try {
     const service = await Service.findById(req.params.serviceId);
 
     if (!service) {
-      return res.status(404).send({ error: "Service not found" });
+      return res.status(404).json({ error: "Service not found" });
     }
 
-    res.status(200).send(service);
+    return res.status(200).json(service);
+
   } catch (err) {
-    res.status(500).send({
+    return res.status(500).json({
       error: "Error fetching service",
       details: err.message
     });
   }
-};
+}
 
 /**
  * Update service (Admin)
  */
-module.exports.updateService = async (req, res) => {
-  try {
+
+export async function updateService(req, res) {
+  try{
+
+    const { serviceId } = req.params;
 
     // -- Updates dont include categories and sub-categories
     // -- Retire the existing Service and create a new one with chosen category and sub-category
+    // Fields that are allowed to be updated
 
     const allowedFields = [
       "name",
       "description",
-      "duration",
+      "duration",      
       "duration_unit",
       "labor_price",
       "materials",
       "date_ended"
     ];
 
-    const updates = {};
-    allowedFields.forEach(field => {
-      if (req.body[field] !== undefined) {
-        updates[field] = req.body[field];
-      }
-    });
+    // 1️⃣ Fetch service first (so we can enforce business rules)
+    const service = await Service.findById(serviceId);
 
-    const updatedService = await Service.findByIdAndUpdate(
-      req.params.serviceId,
-      updates,
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedService) {
-      return res.status(404).send({ error: "Service not found" });
+    if (!service) {
+      return res.status(404).json({
+        error: 'Service not found'
+      });
     }
 
-    res.status(200).send(updatedService);
+    // 2️⃣ Business rule: archived services are immutable
+    if (!service.is_active) {
+      return res.status(400).json({
+        error: 'Archived services cannot be updated'
+      });
+    }
+
+    // 3️⃣ Apply allowed updates only
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        // Defensive handling for materials
+        if (field === 'materials'){
+          service.materials = Array.isArray(req.body.materials)
+            ? req.body.materials
+            : [];
+        } else {
+          service[field] = req.body[field];
+        }
+      }
+    }
+
+    // 4️⃣ Persist changes
+    await service.save();
+
+    return res.status(200).json(service);
+
   } catch (err) {
-    res.status(500).send({
-      error: "Error updating service",
+    console.error('UpdateService Error:', err);
+    return res.status(500).json({
+      error: 'Error updating service',
       details: err.message
     });
   }
-};
+}
+
+// export async function updateService(req, res) {
+//   try {
+
+//     // -- Updates dont include categories and sub-categories
+//     // -- Retire the existing Service and create a new one with chosen category and sub-category
+
+//     const allowedFields = [
+//       "name",
+//       "description",
+//       "duration",
+//       "duration_unit",
+//       "labor_price",
+//       "materials",
+//       "date_ended"
+//     ];
+
+//     const updates = {};
+//     allowedFields.forEach(field => {
+//       if (req.body[field] !== undefined) {
+//         updates[field] = req.body[field];
+//       }
+//     });
+
+//     const updatedService = await Service.findByIdAndUpdate(
+//       req.params.serviceId,
+//       updates,
+//       { new: true, runValidators: true }
+//     );
+
+//     if (!updatedService) {
+//       return res.status(404).json({ error: "Service not found" });
+//     }
+
+//     return res.status(200).json(updatedService);
+
+//   } catch (err) {
+//     return res.status(500).json({
+//       error: "Error updating service",
+//       details: err.message
+//     });
+//   }
+// }
 
 /**
  * Archive service (Admin)
  * Soft-delete using date_ended + is_active
  */
-module.exports.archiveService = async (req, res) => {
+export async function archiveService(req, res) {
   try {
     const service = await Service.findById(req.params.serviceId);
 
     if (!service) {
-      return res.status(404).send({ error: "Service not found" });
+      return res.status(404).json({ error: "Service not found" });
     }
 
     service.date_ended = new Date();
@@ -192,14 +280,15 @@ module.exports.archiveService = async (req, res) => {
 
     await service.save();
 
-    res.status(200).send({
+    return res.status(200).json({
       message: "Service archived successfully",
       service
     });
+
   } catch (err) {
-    res.status(500).send({
+    return res.status(500).json({
       error: "Error archiving service",
       details: err.message
     });
   }
-};
+}

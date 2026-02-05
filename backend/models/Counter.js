@@ -1,4 +1,6 @@
-const mongoose = require('mongoose');
+// src/models/Counter.js
+
+import mongoose from 'mongoose';
 
 const counterSchema = new mongoose.Schema({
         key: {
@@ -21,4 +23,4 @@ counterSchema.index(
     {unique: true}
 );
 
-module.exports = mongoose.model('Counter', counterSchema);
+export default mongoose.model('Counter', counterSchema);

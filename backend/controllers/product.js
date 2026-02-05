@@ -1,13 +1,15 @@
-const Product = require('../models/Product');
+// src/controllers/product.js
+
+import Product from '../models/Product.js';
 
 /**
  * Create Product
  */
-exports.createProduct = async (req, res) => {
+export async function createProduct(req, res) {
   try {
     const { name, description, price, category, sub_category } = req.body;
 
-    if (!name || !price || !category) {
+    if (!name || price === undefined || !category) {
       return res.status(400).json({ message: 'Name, price, and category are required' });
     }
 
@@ -28,12 +30,12 @@ exports.createProduct = async (req, res) => {
     console.error('CreateProduct error:', err);
     res.status(500).json({ message: 'Failed to create product' });
   }
-};
+}
 
 /**
  * Add Images to Product
  */
-exports.addImages = async (req, res) => {
+export async function addImages(req, res) {
   try {
     const { id } = req.params;
     const { images } = req.body; // expect array of URLs or paths
@@ -45,6 +47,7 @@ exports.addImages = async (req, res) => {
     const product = await Product.findById(id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
+    product.images = product.images || [];
     product.images.push(...images);
     await product.save();
 
@@ -53,12 +56,12 @@ exports.addImages = async (req, res) => {
     console.error('AddImages error:', err);
     res.status(500).json({ message: 'Failed to add images' });
   }
-};
+}
 
 /**
  * Update Product
  */
-exports.updateProduct = async (req, res) => {
+export async function updateProduct(req, res) {
   try {
     const { id } = req.params;
     const updates = req.body;
@@ -106,13 +109,13 @@ exports.updateProduct = async (req, res) => {
     console.error('UpdateProduct error:', err);
     res.status(500).json({ message: 'Failed to update product' });
   }
-};
+}
 
 
 /**
  * Replace Product Images (used for removal)
  */
-exports.updateImages = async (req, res) => {
+export async function updateImages(req, res) {
   try {
     const { id } = req.params;
     const { images } = req.body;
@@ -135,12 +138,12 @@ exports.updateImages = async (req, res) => {
     console.error('UpdateImages error:', err);
     res.status(500).json({ message: 'Failed to update images' });
   }
-};
+}
 
 /**
  * Get All Products
  */
-exports.getProducts = async (req, res) => {
+export async function getProducts(req, res) {
   try {
       const products = await Product.find({ is_deleted: false })
         .populate({
@@ -154,14 +157,14 @@ exports.getProducts = async (req, res) => {
     } catch (err) {
       console.error('GetProducts error:', err);
       res.status(500).json({ message: 'Failed to fetch products' });
-  };
-};
+  }
+}
 
-exports.getProductsById = async (req, res) => {
+export async function getProductsById(req, res) {
   try {
 
     const product = await Product.findById(req.params.id);
-    if(!product) return  res.status(404).json({message: 'Product not found'});
+    if (!product) return  res.status(404).json({message: 'Product not found'});
     res.json(product);
 
   } catch (err) {
@@ -169,12 +172,12 @@ exports.getProductsById = async (req, res) => {
     res.status(500).json({message: 'Failed to fetch product'});
   }
 
-};
+}
 
 /**
  * Soft Delete Product
  */
-exports.deleteProduct = async (req, res) => {
+export async function deleteProduct(req, res) {
   try {
     const { id } = req.params;
     const product = await Product.findByIdAndUpdate(id, { is_deleted: true }, { new: true });
@@ -185,4 +188,4 @@ exports.deleteProduct = async (req, res) => {
     console.error('DeleteProduct error:', err);
     res.status(500).json({ message: 'Failed to delete product' });
   }
-};
+}

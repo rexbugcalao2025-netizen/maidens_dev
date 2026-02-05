@@ -1,4 +1,6 @@
-const mongoose = require('mongoose');
+// src/models/Employee.js
+
+import mongoose from 'mongoose';
 
 /**
  * Job Position sub-schema
@@ -150,5 +152,4 @@ employeeSchema.methods.deactivateExpiredCredentials = function () {
   });
 };
 
-
-module.exports = mongoose.model('Employee', employeeSchema);
+export default mongoose.model('Employee', employeeSchema);

@@ -1,4 +1,6 @@
-const mongoose = require("mongoose");
+// src/models/Service.js
+
+import mongoose from "mongoose";
 
 const materialSchema = new mongoose.Schema(
   {
@@ -173,4 +175,4 @@ serviceSchema.index({ category: 1 });
 serviceSchema.index({ "sub_category.id": 1 });
 serviceSchema.index({ is_active: 1 });
 
-module.exports = mongoose.model("Service", serviceSchema);
+export default mongoose.model('Service', serviceSchema);

@@ -1,4 +1,6 @@
-const mongoose = require('mongoose');
+// src/models/Clients.js
+
+import mongoose from 'mongoose';
 
 /**
  * Occupation sub-schema
@@ -74,4 +76,4 @@ clientSchema.pre(/^find/, function () {
   this.where({ is_deleted: false });
 });
 
-module.exports = mongoose.model('Client', clientSchema);
+export default mongoose.model('Client', clientSchema);

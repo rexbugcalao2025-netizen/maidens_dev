@@ -1,4 +1,6 @@
-const mongoose = require("mongoose");
+// src/models/ClientService.js
+
+import mongoose from "mongoose";
 
 const commissionSchema = new mongoose.Schema(
   {
@@ -78,6 +80,10 @@ const clientServiceSchema = new mongoose.Schema(
 
     date_completed: {
       type: Date
+    },    
+
+    date_cancelled: {
+      type: Date    
     },
 
     status: {
@@ -88,6 +94,10 @@ const clientServiceSchema = new mongoose.Schema(
 
     service_rendered: {
       type: [serviceRenderedSchema],
+      validate: {
+        validator: v => Array.isArray(v) && v.length > 0,
+        message: 'At least one service must be rendered'
+      },
       required: true
     },
 
@@ -143,11 +153,11 @@ const clientServiceSchema = new mongoose.Schema(
 * Auto-calculation Hooks
 **/ 
 
-clientServiceSchema.pre("save", async function () {
+clientServiceSchema.pre("save", function () {
     let total = 0;
 
     this.service_rendered.forEach(service => {
-        total += service.amount;
+        total += Number(service.amount) || 0;
     });
 
     this.total_amount = Math.max(0, total - this.discount_amount);
@@ -156,6 +166,13 @@ clientServiceSchema.pre("save", async function () {
         (sum, p) => sum + p.amount,
         0
     );
+
+
+    if (paidAmount > this.total_amount){
+      throw new Error('Total payment exceeds total amount');
+      // TODO: UPDATE to fit business rule
+      // STATUS: paid with change.
+    }
 
     if (paidAmount === 0) {
         this.payment_status = "unpaid";
@@ -168,7 +185,15 @@ clientServiceSchema.pre("save", async function () {
     if (this.status === "completed" && !this.date_completed) {
         this.date_completed = new Date();
     }
+
+    if (this.status === 'cancelled' && !this.date_cancelled){
+      this.date_cancelled = new Date();
+    }
 });
 
+clientServiceSchema.index({ client_id: 1, date_rendered: -1 });
+clientServiceSchema.index({ status: 1 });
+clientServiceSchema.index({ is_void: 1 });
+clientServiceSchema.index({ createdAt: -1 });
 
-module.exports = mongoose.model('ClientService', clientServiceSchema);
+export default mongoose.model('ClientService', clientServiceSchema);

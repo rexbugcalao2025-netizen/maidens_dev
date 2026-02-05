@@ -1,11 +1,14 @@
-const Employee = require('../models/Employee');
-const Client = require('../models/Client');
-const generateFMHCode = require('../utils/generateFMHCode');
+// src/controllers/employee.js
+
+
+import Employee from '../models/Employee.js';
+import Client from '../models/Client.js';
+import generateFMHCode from '../utils/generateFMHCode.js';
 
 /**
  * CREATE EMPLOYEE (ADMIN ONLY)
  */
-exports.createEmployee = async (req, res) => {
+export async function createEmployee (req, res) {
   try {
 
     // note: assigns values from requesting procedure (eg. Postman body or frontend payload)
@@ -67,36 +70,52 @@ exports.createEmployee = async (req, res) => {
       message: err.message || 'Failed to create employee'
     });
   }
-};
+}
 
 
 /**
  * GET (ACTIVE) EMPLOYEES (ADMIN)
  */
-exports.getEmployees = async (req, res) => {
+export async function getEmployees (req, res) {
   try {
     const employees = await Employee.find({
       date_retired: null   // ✅ Active employees only
     })
-      .populate(
-        'user_id',
-        'email full_name first_name last_name is_deleted is_admin'
-      )
+      .populate({
+        path: 'user_id',
+        select: 'email full_name first_name last_name is_deleted is_admin',
+        match: { is_deleted: false }
+    });
 
-      // Normalize response (same pattern as Clients)
-    const normalized = employees.map(emp => {
-      const obj = emp.toObject()
-      return {
-        ...obj,
-        user: obj.user_id,
-        user_id: undefined
-      }
-    })
+    // Normalize response (same pattern as Clients)
+    const normalized = employees
+      .filter(emp => emp.user_id) // drop employees with deleted users
+      .map(emp => {
 
-    res.json(normalized)
+        const obj = emp.toObject();
+
+        return {
+          ...obj,
+          user: obj.user_id,
+          user_id: undefined
+        };
+
+      });
+
+    // const normalized = employees.map(emp => {
+    //   const obj = emp.toObject();
+    //   return {
+    //     ...obj,
+    //     user: obj.user_id,
+    //     user_id: undefined
+    //   }
+    // })
+
+    return res.json(normalized);
+
   } catch (err) {
-    console.error('GetEmployees error:', err)
-    res.status(500).json({ message: 'Failed to load employees' })
+    console.error('GetEmployees error:', err);
+    res.status(500).json({ message: 'Failed to load employees' });
   }
 }
 
@@ -104,76 +123,114 @@ exports.getEmployees = async (req, res) => {
 /**
  * GET EMPLOYEE BY ID (ADMIN)
  */
-exports.getEmployeeById = async (req, res) => {
+export async function getEmployeeById (req, res) {
   try {
     const employee = await Employee.findById(req.params.id)
-      .populate('user_id', 'first_name last_name email');
+      .populate({
+        path: 'user_id', 
+        select: 'first_name last_name email'
+      });
 
     if (!employee) {
       return res.status(404).json({ message: 'Employee not found' });
     }
 
-    res.json(employee);
+    return res.json({ 
+      message: 'Employee fetched successfully', 
+      employee 
+    });
+
   } catch (err) {
     console.error('Get employee error:', err);
     res.status(500).json({ message: 'Failed to fetch employee' });
   }
-};
+}
 
 /**
  * GET EMPLOYEE BY USER ID (ADMIN)
  */
-exports.getEmployeeByUserId = async (req, res) => {
+export async function getEmployeeByUserId (req, res) {
   try {
-    const { userId } = req.params
+    const { userId } = req.params;
 
     const employee = await Employee.findOne({
       user_id: userId,
       date_retired: null
     })
+    .populate({
+      path: 'user_id',
+      select: 'first_name last_name email'
+    });
 
     if (!employee) {
       return res.status(404).json({
         message: 'Employee not found'
-      })
+      });
     }
 
-    res.json(employee)
+    return res.json({ 
+      message: 'Employee fetched successfully', 
+      employee 
+    });
+
   } catch (err) {
-    console.error('GetEmployeeByUserId error:', err)
+    console.error('GetEmployeeByUserId error:', err);
     res.status(500).json({
       message: 'Failed to load employee'
-    })
+    });
   }
 }
 
 /**
  * GET MY EMPLOYEE PROFILE (LOGGED-IN USER)
  */
-exports.getMyEmployeeProfile = async (req, res) => {
+export async function getMyEmployeeProfile (req, res) {
   try {
     const employee = await Employee.findOne({ user_id: req.user.id })
-      .populate('user_id', 'first_name last_name email');
+      .populate({
+        path: 'user_id', 
+        select: 'first_name last_name email'
+      });
 
     if (!employee) {
       return res.status(404).json({ message: 'Employee profile not found' });
     }
 
-    res.json(employee);
+    return res.json({ 
+      message: 'Employee fetched successfully', 
+      employee 
+    });
+
   } catch (err) {
     console.error('Get my employee error:', err);
     res.status(500).json({ message: 'Failed to fetch employee profile' });
   }
-};
+}
 
 /**
  * UPDATE EMPLOYEE (ADMIN)
  */
-exports.updateEmployee = async (req, res) => {
+export async function updateEmployee (req, res) {
   try {
-    const updates = { ...req.body };
+    
+    const allowedUpdates = [
+      'date_hired',
+      'tax_identification_number',
+      'job_position',
+      'credentials',
+      'date_retired'
+    ];
+    
+    // const updates = { ...req.body };
+    const updates = {};
 
-    delete updates.user_id; // prevent reassignment
+    for (const key of allowedUpdates){
+      if (req.body[key] !== undefined){
+        updates[key] = req.body[key];
+      }
+    }
+
+    // delete updates.user_id; // prevent reassignment
 
     const employee = await Employee.findByIdAndUpdate(
       req.params.id,
@@ -185,20 +242,21 @@ exports.updateEmployee = async (req, res) => {
       return res.status(404).json({ message: 'Employee not found' });
     }
 
-    res.json({
+    return res.json({
       message: 'Employee updated successfully',
       employee
     });
+
   } catch (err) {
     console.error('Update employee error:', err);
     res.status(500).json({ message: 'Failed to update employee' });
   }
-};
+}
 
 /**
  * ADD JOB POSITION (ADMIN)
  */
-exports.addJobPosition = async (req, res) => {
+export async function addJobPosition (req, res) {
   try {
     const { title, entity, date_started } = req.body;
 
@@ -221,20 +279,21 @@ exports.addJobPosition = async (req, res) => {
 
     await employee.save();
 
-    res.json({
+    return res.json({
       message: 'Job position added successfully',
       job_position: employee.job_position
     });
+
   } catch (err) {
     console.error('Add job position error:', err);
     res.status(500).json({ message: 'Failed to add job position' });
   }
-};
+}
 
 /**
  * UPDATE JOB POSITION (ADMIN)
  */
-exports.updateJobPosition = async (req, res) => {
+export async function updateJobPosition (req, res) {
   try {
     const { id, positionId } = req.params;
 
@@ -252,20 +311,21 @@ exports.updateJobPosition = async (req, res) => {
 
     await employee.save();
 
-    res.json({
+    return res.json({
       message: 'Job position updated successfully',
       job_position: position
     });
+
   } catch (err) {
     console.error('Update job position error:', err);
     res.status(500).json({ message: 'Failed to update job position' });
   }
-};
+}
 
 /**
  * END / DEACTIVATE JOB POSITION (ADMIN)
  */
-exports.endJobPosition = async (req, res) => {
+export async function endJobPosition (req, res) {
   try {
     const { id, positionId } = req.params;
 
@@ -284,20 +344,21 @@ exports.endJobPosition = async (req, res) => {
 
     await employee.save();
 
-    res.json({
+    return res.json({
       message: 'Job position ended successfully',
       job_position: position
     });
+
   } catch (err) {
     console.error('End job position error:', err);
     res.status(500).json({ message: 'Failed to end job position' });
   }
-};
+}
 
 /**
  * REMOVE JOB POSITION (ADMIN – HARD REMOVE)
  */
-exports.removeJobPosition = async (req, res) => {
+export async function removeJobPosition (req, res) {
   try {
     const { id, positionId } = req.params;
 
@@ -314,17 +375,18 @@ exports.removeJobPosition = async (req, res) => {
     position.deleteOne();
     await employee.save();
 
-    res.json({ message: 'Job position removed permanently' });
+    return res.json({ message: 'Job position removed permanently' });
+
   } catch (err) {
     console.error('Remove job position error:', err);
     res.status(500).json({ message: 'Failed to remove job position' });
   }
-};
+}
 
 /**
  * ADD EMPLOYEE CREDENTIAL (ADMIN)
  */
-exports.addCredential = async (req, res) => {
+export async function addCredential (req, res) {
   try {
     const { employeeId } = req.params;
     const {
@@ -354,20 +416,21 @@ exports.addCredential = async (req, res) => {
 
     await employee.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Credential added successfully',
       credentials: employee.credentials
     });
+
   } catch (err) {
     console.error('AddCredential error:', err);
     res.status(500).json({ message: 'Failed to add credential' });
   }
-};
+}
 
 /**
  * UPDATE EMPLOYEE CREDENTIAL (ADMIN)
  */
-exports.updateCredential = async (req, res) => {
+export async function updateCredential (req, res) {
   try {
     const { employeeId, credentialId } = req.params;
     const updates = req.body;
@@ -386,20 +449,21 @@ exports.updateCredential = async (req, res) => {
 
     await employee.save();
 
-    res.json({
+    return res.json({
       message: 'Credential updated successfully',
       credential
     });
+
   } catch (err) {
     console.error('UpdateCredential error:', err);
     res.status(500).json({ message: 'Failed to update credential' });
   }
-};
+}
 
 /**
  * REMOVE EMPLOYEE CREDENTIAL (ADMIN)
  */
-exports.removeCredential = async (req, res) => {
+export async function removeCredential (req, res) {
   try {
     const { employeeId, credentialId } = req.params;
 
@@ -409,25 +473,36 @@ exports.removeCredential = async (req, res) => {
     }
 
     // Remove the credential by filtering the array
-    employee.credentials = employee.credentials.filter(
-      (cred) => cred._id.toString() !== credentialId
-    );
+    const credential = employee.credentials.id(credentialId);
+
+    if (!credential){
+      return res.status(404).json({
+        message: 'Credential not found'
+      });
+    }
+
+    credential.deleteOne();
+    
+    // employee.credentials = employee.credentials.filter(
+    //   (cred) => cred._id.toString() !== credentialId
+    // );
 
     await employee.save();
 
-    res.json({
+    return res.json({
       message: 'Credential removed successfully'
     });
+
   } catch (err) {
     console.error('RemoveCredential error:', err);
     res.status(500).json({ message: 'Failed to remove credential' });
   }
-};
+}
 
 /**
  * GET EMPLOYEE CREDENTIALS (ADMIN)
  */
-exports.getCredentials = async (req, res) => {
+export async function getCredentials (req, res) {
   try {
     const { employeeId } = req.params;
 
@@ -440,12 +515,12 @@ exports.getCredentials = async (req, res) => {
     employee.deactivateExpiredCredentials();
     await employee.save();
 
-    res.json(employee.credentials);
+    return res.json(employee.credentials);
   } catch (err) {
     console.error('GetCredentials error:', err);
     res.status(500).json({ message: 'Failed to fetch credentials' });
   }
-};
+}
 
 
 

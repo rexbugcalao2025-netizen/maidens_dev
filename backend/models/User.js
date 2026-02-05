@@ -1,4 +1,6 @@
-const mongoose = require('mongoose');
+// src/models/user.js
+
+import mongoose from 'mongoose';
 
 /**
  * Phone sub-schema
@@ -137,5 +139,4 @@ userSchema.methods.toJSON = function () {
   return obj;
 };
 
-
-module.exports = mongoose.model('User', userSchema);
+export default mongoose.model('User', userSchema);

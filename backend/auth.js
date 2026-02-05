@@ -1,6 +1,8 @@
-const jwt = require('jsonwebtoken');
-const User = require('./models/User');
-require('dotenv').config();
+// src/auth.js
+
+import jwt from 'jsonwebtoken';
+import User from './models/User.js';
+import 'dotenv/config';
 
 const JWT_SECRET = process.env.JWT_SKEY;
 const REFRESH_SECRET = process.env.JWT_REFRESH_SKEY;
@@ -16,7 +18,7 @@ if (!REFRESH_SECRET){
 /*
    Create Access Token
 */ 
-module.exports.createAccessToken = (user) => {
+export function createAccessToken (user) {
     const payload = {
         id      : user._id,
         email   : user.email,
@@ -31,7 +33,7 @@ module.exports.createAccessToken = (user) => {
 /*
    Create Refresh Token
 */ 
-module.exports.createRefreshToken = (user) => {
+export function createRefreshToken (user) {
     return jwt.sign(
         { id: user._id },
         REFRESH_SECRET,
@@ -42,7 +44,7 @@ module.exports.createRefreshToken = (user) => {
 /*
    /auth/refresh endpoint
 */ 
-module.exports.refreshToken = async (req, res) => {
+export async function refreshToken (req, res) {
     try {
 
         const token = req.cookies?.refreshToken;
@@ -86,7 +88,7 @@ module.exports.refreshToken = async (req, res) => {
 /*
     Middleware: Verify Token
 */ 
-module.exports.verify = (req, res, next) => {
+export function verify (req, res, next) {
     const authHeader = req.headers.authorization;
 
     // Validate header exists and has proper format
@@ -115,7 +117,7 @@ module.exports.verify = (req, res, next) => {
 /*
     Middleware: Verify Admin
 */ 
-module.exports.verifyAdmin = (req, res, next) => {
+export function verifyAdmin (req, res, next) {
     if (req.user?.isAdmin) {
         return next();
     }
@@ -128,7 +130,7 @@ module.exports.verifyAdmin = (req, res, next) => {
 /*
     Middleware: Check if logged in
 */ 
-module.exports.isLoggedIn = (req, res, next) => {
+export function isLoggedIn (req, res, next) {
     if (req.user) return next();
     return res.status(401).json({ message: "Not logged in" });
 };
@@ -136,7 +138,7 @@ module.exports.isLoggedIn = (req, res, next) => {
 /*
     Centralized Error Handler
 */ 
-module.exports.errorHandler = (err, req, res, next) => {
+export function errorHandler (err, req, res, next) {
     console.error("Error:", err);
 
     const status = err.status || 500;

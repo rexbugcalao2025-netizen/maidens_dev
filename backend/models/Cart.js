@@ -1,4 +1,6 @@
-const mongoose = require('mongoose');
+// src/models/Cart.js
+
+import mongoose from 'mongoose';
 
 /**
  * Cart Item sub-schema
@@ -87,6 +89,7 @@ cartSchema.pre('save', function (next) {
   });
 
   this.total_amount = total;
+  next();
 });
 
 /**
@@ -96,4 +99,4 @@ cartSchema.pre(/^find/, function () {
   this.where({ is_deleted: false });
 });
 
-module.exports = mongoose.model('Cart', cartSchema);
+export default mongoose.model('Cart', cartSchema);

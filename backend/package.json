@@ -5,7 +5,7 @@
   "keywords": [],
   "license": "ISC",
   "author": "Rex Bugcalao",
-  "type": "commonjs",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,6 +18,7 @@
     "express": "^5.2.1",
     "express-session": "^1.18.2",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.0.1"
+    "mongoose": "^9.0.1",
+    "pg": "^8.17.2"
   }
 }

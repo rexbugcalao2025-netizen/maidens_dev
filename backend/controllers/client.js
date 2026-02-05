@@ -1,19 +1,27 @@
-const Client = require('../models/Client');
-const Employee = require('../models/Employee');
-const generateFMHCode = require('../utils/generateFMHCode');
+// src/controllers/client.js
+
+import mongoose from 'mongoose';
+import Client from '../models/Client.js';
+import Employee from '../models/Employee.js';
+import generateFMHCode from '../utils/generateFMHCode.js';
+
 
 /**
  * CREATE CLIENT (Admin only)
  */
-exports.createClient = async (req, res) => {
+export async function createClient (req, res) {
   try {
 
     // note: assign values from requesting procedure (eg. postman body, or frontend payload)
     const { user_id, occupation, notes } = req.body; 
 
     // note: ensures that user_id is provided
-    if (!user_id) {
-      return res.status(400).json({ message: 'user_id is required' });
+    // if (!user_id) {
+    //   return res.status(400).json({ message: 'user_id is required' });
+    // }
+    if (!mongoose.Types.ObjectId.isValid(user_id)) {
+      return res.status(400)
+        .json({ message: 'Invalid user ID'});
     }
 
     // 🚫 BLOCK: user is an employee
@@ -50,12 +58,12 @@ exports.createClient = async (req, res) => {
     console.error('CreateClient error:', err);
     res.status(500).json({ message: 'Failed to create client' });
   }
-};
+}
 
 /**
  * GET ALL CLIENTS (Admin only)
  */
-exports.getClients = async (req, res) => {
+export async function getClients (req, res) {
   try {
     const clients = await Client.find({ is_deleted: false })
       .populate('user_id', 'email full_name first_name last_name is_admin')
@@ -83,9 +91,15 @@ exports.getClients = async (req, res) => {
 /**
  * GET CLIENT BY ID (Admin only)
  */
-exports.getClientById = async (req, res) => {
+export async function getClientById (req, res) {
   try {
     const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)){
+      return res.status(400)
+          .json({ message: 'Invalid client ID'});
+    }
+
     const client = await Client.findById(id)
       .populate('user_id', 'first_name last_name email');
 
@@ -98,14 +112,19 @@ exports.getClientById = async (req, res) => {
     console.error('GetClientById error:', err);
     res.status(500).json({ message: 'Failed to fetch client' });
   }
-};
+}
 
 /**
  * GET CLIENT BY USER ID (Admin only)
  */
-exports.getClientByUserId = async (req, res) => {
+export async function getClientByUserId (req, res) {
   try {
     const { userId } = req.params
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400)
+          .json({ message: 'Invalid user ID'});
+    }
 
     const client = await Client.findOne({
       user_id: userId,
@@ -126,10 +145,20 @@ exports.getClientByUserId = async (req, res) => {
 /**
  * UPDATE CLIENT NOTES OR OCCUPATION (Admin only)
  */
-exports.updateClient = async (req, res) => {
+export async function updateClient (req, res) {
   try {
     const { id } = req.params;
-    const updates = { ...req.body };
+    const { occupation, notes } = req.body;
+    
+    const updates = {};
+    if (occupation !== undefined) updates.occupation = occupation;
+    if (notes !== undefined) updates.notes = notes;
+
+
+    if (!mongoose.Types.ObjectId.isValid(id)){
+      return res.status(400)
+          .json({ message: 'Invalid client ID'});
+    }
 
     const client = await Client.findByIdAndUpdate(id, updates, {
       new: true,
@@ -148,14 +177,19 @@ exports.updateClient = async (req, res) => {
     console.error('UpdateClient error:', err);
     res.status(500).json({ message: 'Failed to update client' });
   }
-};
+}
 
 /**
  * SOFT DELETE CLIENT (Admin only)
  */
-exports.deleteClient = async (req, res) => {
+export async function deleteClient (req, res) {
   try {
     const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)){
+      return res.status(400)
+          .json({ message: 'Invalid client ID'});
+    }
 
     const client = await Client.findByIdAndUpdate(
       id,
@@ -172,15 +206,20 @@ exports.deleteClient = async (req, res) => {
     console.error('DeleteClient error:', err);
     res.status(500).json({ message: 'Failed to delete client' });
   }
-};
+}
 
 /**
  * ADD OCCUPATION TO CLIENT (Admin only)
  */
-exports.addOccupation = async (req, res) => {
+export async function addOccupation (req, res) {
   try {
     const { id } = req.params;
     const occupation = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)){
+      return res.status(400)
+          .json({ message: 'Invalid client ID'});
+    }
 
     const client = await Client.findById(id);
     if (!client) {
@@ -198,25 +237,36 @@ exports.addOccupation = async (req, res) => {
     console.error('AddOccupation error:', err);
     res.status(500).json({ message: 'Failed to add occupation' });
   }
-};
+}
 
 /**
  * UPDATE OCCUPATION (Admin only)
  */
-exports.updateOccupation = async (req, res) => {
+export async function updateOccupation (req, res) {
   try {
     const { id, occ_id } = req.params;
     const updates = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)){
+      return res.status(400)
+          .json({ message: 'Invalid client ID'});
+    }
 
     const client = await Client.findById(id);
     if (!client) {
       return res.status(404).json({ message: 'Client not found' });
     }
 
+    if (!mongoose.Types.ObjectId.isValid(occ_id)){
+      return res.status(400)
+        .json({ message: 'Invalid occupation ID' });
+    }
+
     const occupation = client.occupation.id(occ_id);
     if (!occupation) {
       return res.status(404).json({ message: 'Occupation not found' });
     }
+
 
     Object.assign(occupation, updates);
     await client.save();
@@ -229,14 +279,19 @@ exports.updateOccupation = async (req, res) => {
     console.error('UpdateOccupation error:', err);
     res.status(500).json({ message: 'Failed to update occupation' });
   }
-};
+}
 
 /**
  * REMOVE OCCUPATION (Admin only)
  */
-exports.removeOccupation = async (req, res) => {
+export async function removeOccupation (req, res) {
   try {
     const { id, occ_id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)){
+      return res.status(400)
+          .json({ message: 'Invalid client ID'});
+    }
 
     const client = await Client.findById(id);
     if (!client) {
@@ -263,15 +318,20 @@ exports.removeOccupation = async (req, res) => {
     console.error('RemoveOccupation error:', err);
     res.status(500).json({ message: 'Failed to remove occupation' });
   }
-};
+}
 
 /**
  * UPDATE CLIENT NOTES (Admin only)
  */
-exports.updateClientNotes = async (req, res) => {
+export async function updateClientNotes (req, res) {
   try {
     const { id } = req.params
     const { notes } = req.body
+
+    if (!mongoose.Types.ObjectId.isValid(id)){
+      return res.status(400)
+          .json({ message: 'Invalid client ID'});
+    }
 
     const client = await Client.findById(id)
     if (!client || client.is_deleted) {

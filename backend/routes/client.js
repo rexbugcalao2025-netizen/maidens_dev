@@ -1,7 +1,12 @@
-const express = require('express');
+// src/routes/cluient.js
+
+import express from 'express';
+import * as clientController from '../controllers/client.js';
+import { verify, verifyAdmin } from '../auth.js';
+
 const router = express.Router();
-const clientController = require('../controllers/client');
-const { verify, verifyAdmin } = require('../auth');
+
+
 
 /**
  * ============================
@@ -53,4 +58,4 @@ router.put('/:id/occupations/:occ_id', verify, verifyAdmin, clientController.upd
 // Remove an occupation from a client
 router.delete('/:id/occupations/:occ_id', verify, verifyAdmin, clientController.removeOccupation);
 
-module.exports = router;
+export default router;
