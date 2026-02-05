@@ -1,6 +1,8 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
 
 /*
     TODO: Add routes here
@@ -18,7 +20,7 @@ import clientServiceRoutes from './routes/clientService.js';
 import inventoryRoutes from './routes/inventory.js';
 
 
-require('dotenv').config();
+dotenv.config();
 const hostOrigin = process.env.ORIGIN;
 const port = process.env.PORT || 3000;
 
@@ -85,13 +87,29 @@ app.use('/api/inventory', inventoryRoutes);
      Start server only if not imported by tests
 
 */ 
-if (require.main === module) {
+
+
+// import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+
+if (process.argv[1] === __filename){
     app.listen(port, () => {
         console.log(`🚀 Server running on port ${port}`);
-    })
-    .on("error", (err) => {
-        console.error("Failed to start server:", err);
+    }).on('error', (err) => {
+        console.error('Failed to start server:', err);
     });
 }
 
-module.exports = app;
+// if (require.main === module) {
+//     app.listen(port, () => {
+//         console.log(`🚀 Server running on port ${port}`);
+//     })
+//     .on("error", (err) => {
+//         console.error("Failed to start server:", err);
+//     });
+// }
+
+// module.exports = app;
+
+export default app;

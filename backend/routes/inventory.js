@@ -1,10 +1,8 @@
-// import express from 'express';
-// import * as inventoryController from '../src/controllers/inventory.controller.js';
-// import { verify, verifyAdmin } from  '../auth';
+// src/routes/inventory.js
 
-const express = require ('express');
-const inventoryController = require('../src/controllers/inventory.controller.js');
-const { verify, verifyAdmin } = require('../auth');
+import express from 'express';
+import * as inventoryController from '../controllers/inventory.controller.js';
+import { verify, verifyAdmin } from '../auth.js';
 
 const router = express.Router();
 
@@ -53,3 +51,5 @@ router.post(
     verify,
     inventoryController.consumeStock
 );
+
+export default router;

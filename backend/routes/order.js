@@ -1,9 +1,10 @@
-const express = require('express');
+// src/routes/order.js
+
+import express from 'express';
+import * as orderController from '../controllers/order.js';
+import { verify, verifyAdmin } from '../auth.js';
+
 const router = express.Router();
-
-const orderController = require('../controllers/order');
-const { verify, verifyAdmin } = require('../auth');
-
 /**
  * USER ROUTES
  */
@@ -30,4 +31,4 @@ router.post('/:id/payment', verify, verifyAdmin, orderController.addPayment);
 // Soft delete order
 router.delete('/:id', verify, verifyAdmin, orderController.deleteOrder);
 
-module.exports = router;
+export default router;

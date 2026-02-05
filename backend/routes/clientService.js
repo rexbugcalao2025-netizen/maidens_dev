@@ -1,6 +1,8 @@
-const express = require("express");
-const clientServiceController = require("../controllers/clientService");
-const { verify, verifyAdmin } = require("../auth");
+// src/routes/clientService.js
+
+import express from 'express';
+import * as clientServiceController from '../controllers/clientService.js';
+import { verify, verifyAdmin } from '../auth.js';
 
 const router = express.Router();
 
@@ -74,4 +76,4 @@ router.patch(
   clientServiceController.voidClientService
 );
 
-module.exports = router;
+export default router;

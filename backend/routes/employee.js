@@ -1,7 +1,10 @@
-const express = require('express');
+// src/routes/employee.js
+
+import express from 'express';
+import * as employeeController from '../controllers/employee.js';
+import { verify, verifyAdmin } from '../auth.js'; // destructured
+
 const router = express.Router();
-const employeeController = require('../controllers/employee');
-const { verify, verifyAdmin } = require('../auth'); // destructured
 
 /**
  * ============================
@@ -15,9 +18,6 @@ router.post('/', verify, verifyAdmin, employeeController.createEmployee);
 // Get active employees (Admin only)
 router.get('/', verify, verifyAdmin, employeeController.getEmployees);
 
-// Get employee by ID (Admin only)
-router.get('/:id', verify, verifyAdmin, employeeController.getEmployeeById);
-
 // Get employee by User ID (Admin only)
 router.get(
   '/by-user/:userId',
@@ -28,6 +28,10 @@ router.get(
 
 // Get my employee profile (Logged-in user)
 router.get('/me/profile', verify, employeeController.getMyEmployeeProfile);
+
+// Get employee by ID (Admin only)
+router.get('/:id', verify, verifyAdmin, employeeController.getEmployeeById);
+
 
 // Update employee (Admin only)
 router.put('/:id', verify, verifyAdmin, employeeController.updateEmployee);
@@ -56,38 +60,38 @@ router.delete('/:id/job-positions/:positionId', verify, verifyAdmin, employeeCon
  * USER CREDENTIALS
  * ============================
  */
-const {
-  addCredential,
-  updateCredential,
-  removeCredential,
-  getCredentials
-} = require('../controllers/employee');
+// const {
+//   addCredential,
+//   updateCredential,
+//   removeCredential,
+//   getCredentials
+// } = require('../controllers/employee');
 
 router.post(
   '/:employeeId/credentials',
   verify,
   verifyAdmin,
-  addCredential
+  employeeController.addCredential
 );
 
 router.put(
   '/:employeeId/credentials/:credentialId',
   verify,
   verifyAdmin,
-  updateCredential
+  employeeController.updateCredential
 );
 
 router.delete(
   '/:employeeId/credentials/:credentialId',
   verify,
   verifyAdmin,
-  removeCredential
+  employeeController.removeCredential
 );
 
 router.get(
   '/:employeeId/credentials',
   verify,
-  getCredentials
+  employeeController.getCredentials
 );
 
-module.exports = router;
+export default router;

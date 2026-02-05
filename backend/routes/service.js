@@ -1,6 +1,8 @@
-const express = require("express");
-const serviceController = require("../controllers/service");
-const { verify, verifyAdmin } = require("../auth");
+// src/routes/service.js
+
+import express from 'express';
+import * as serviceController from '../controllers/service.js';
+import { verify, verifyAdmin } from '../auth.js';
 
 const router = express.Router();
 
@@ -10,9 +12,6 @@ const router = express.Router();
 
 // Get all active services
 router.get("/", serviceController.getActiveServices);
-
-// Get single service by ID -- Public
-router.get("/:serviceId", serviceController.getServiceById);
 
 /**
  * ADMIN ROUTES
@@ -35,7 +34,12 @@ router.patch(
   serviceController.archiveService
 );
 
+/**
+ * PUBLIC ROUTES (ID-based)
+ */
+
+// Get single service by ID -- Public
+router.get("/:serviceId", serviceController.getServiceById);
 
 
-
-module.exports = router;
+export default router;

@@ -1,4 +1,4 @@
-const Counter = require('../models/Counter');
+import Counter from '../models/Counter.js';
 
 /**
  * Generates:
@@ -27,4 +27,6 @@ async function generateFMHCode({type, branch}){
     return(`FMH${typeLetter}-${branch}-${paddedSeq}`);
 }
 
-module.exports = generateFMHCode;
+// module.exports = generateFMHCode;
+
+export default generateFMHCode;

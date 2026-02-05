@@ -1,34 +1,35 @@
+<!-- scripts/createService.vue -->
 <script setup>
-    import { ref, onMounted, watch, computed } from "vue"
-    import { useRouter } from "vue-router"
-    import api from "@/api"
-    import { Notyf } from "notyf"
+    import { ref, onMounted, watch, computed } from 'vue';
+    import { useRouter } from 'vue-router';
+    import api from '@/api';
+    import { Notyf } from 'notyf';
 
-    const router = useRouter()
-    const notyf = new Notyf()
+    const router = useRouter();
+    const notyf = new Notyf();
 
     /* =======================
     SERVICE CATEGORIES
     ======================= */
-    const serviceCategories = ref([])
-    const serviceSubcategories = ref([])
+    const serviceCategories = ref([]);
+    const serviceSubcategories = ref([]);
 
     /* =======================
     PRODUCT CATEGORIES
     ======================= */
-    const productCategories = ref([])
-    const productSubCategories = ref([])
+    const productCategories = ref([]);
+    const productSubCategories = ref([]);
 
     /* =======================
     PRODUCTS
     ======================= */
-    const products = ref([])
+    const products = ref([]);
 
     /* =======================
     FILTER STATE (PRODUCTS)
     ======================= */
-    const filterProductCategory = ref("")
-    const filterProductSubCategory = ref("")
+    const filterProductCategory = ref("");
+    const filterProductSubCategory = ref("");
 
     /* =======================
     SERVICE FORM
@@ -44,13 +45,13 @@
         date_offered: "",
         date_ended: "",
         materials: [] // { product_id, quantity, price, subTotal }
-    })
+    });
 
     /* =======================
     TEMP PRODUCT SELECTION
     ======================= */
-    const selectedProductId = ref("")
-    const selectedQuantity = ref(1)
+    const selectedProductId = ref("");
+    const selectedQuantity = ref(1);
 
     /* =======================
     LOADERS
@@ -68,12 +69,12 @@
     }
 
     const loadProductCategories = async () => {
-        const res = await api.get("/product-categories")
+        const res = await api.get("/product-categories");
         productCategories.value = res.data ?? []
     }
 
     const loadProducts = async () => {
-    const res = await api.get("/products/admin/all")
+    const res = await api.get("/products/admin/all");
     products.value = res.data ?? []
     }
 
@@ -89,7 +90,7 @@
                 : []
             form.value.sub_category_id = ""
         }
-    )
+    );
 
     /* =======================
     WATCHERS — PRODUCT FILTER
@@ -99,11 +100,11 @@
         productSubCategories.value = cat ? cat.sub_categories : []
         filterProductSubCategory.value = ""
         selectedProductId.value = ""
-    })
+    });
 
     watch(filterProductSubCategory, () => {        
         selectedProductId.value = ""
-    })
+    });
 
     /* =======================
     WATCHERS — MATERIALS SUB TOTAL
@@ -116,7 +117,7 @@
         })
     },
     { deep: true }
-    )
+    );
 
     /* =======================
     COMPUTED — FILTERED PRODUCTS
@@ -137,7 +138,7 @@
 
             return matchCategory && matchSubCategory
         })
-    })
+    });
 
     /* =======================
     COMPUTED — ENABLE / DISABLE SAVE BUTTON

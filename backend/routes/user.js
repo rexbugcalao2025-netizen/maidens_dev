@@ -3,8 +3,7 @@
 import express from 'express';
 import * as userController from '../controllers/user.js';
 import { verify, verifyAdmin } from '../auth.js';
-// import auth from '../auth.js';
-import { addPhone, updatePhone, removePhone } from '../controllers/user.js';
+
 
 const router = express.Router();
 
@@ -39,12 +38,12 @@ router.post('/password-reset/confirm', userController.resetPassword);
 /**
  * Get current logged-in user
  */
-router.get('/me', auth.verify, userController.getMe);
+router.get('/me', verify, userController.getMe);
 
 /**
  * Update current user profile
  */
-router.put('/me', auth.verify, userController.updateMe);
+router.put('/me', verify, userController.updateMe);
 
 /* ============================
    ADMIN (PROTECTED)
@@ -53,23 +52,23 @@ router.put('/me', auth.verify, userController.updateMe);
 /**
  * Get all users
  */
-router.get('/', auth.verify, auth.verifyAdmin, userController.getUsers);
+router.get('/', verify, verifyAdmin, userController.getUsers);
 
 // ✅ Get user by ID (admin)
-router.get('/:id', auth.verify, auth.verifyAdmin, userController.getUserById);
+router.get('/:id', verify, verifyAdmin, userController.getUserById);
 
 /**
  * Soft delete user
  */
-router.delete('/:id', auth.verify, auth.verifyAdmin, userController.deleteUser);
+router.delete('/:id', verify, verifyAdmin, userController.deleteUser);
 
 
 /**
  * User Phones 
  */
-router.post('/phones', verify, addPhone); // add a phone
-router.patch('/phones/:phoneId', verify, updatePhone); // update a phone
-router.delete('/phones/:phoneId', verify, removePhone); // remove a phone
+router.post('/phones', verify, userController.addPhone); // add a phone
+router.patch('/phones/:phoneId', verify, userController.updatePhone); // update a phone
+router.delete('/phones/:phoneId', verify, userController.removePhone); // remove a phone
 
 
 export default router;
