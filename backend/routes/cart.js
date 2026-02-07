@@ -1,7 +1,7 @@
 // src/routes/cart
 
 import express from 'express';
-import * as cartController from '../controllers/cart.js';
+import * as cartController from '../controllers/cart.controller.js';
 import { verify } from '../auth.js';
 
 const router = express.Router();

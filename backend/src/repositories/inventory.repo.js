@@ -1,4 +1,6 @@
 // src/repositories/inventory.repo.js
+// stock_levels, movements
+
 import sql from '../config/db.js';
 
 /*
@@ -43,6 +45,15 @@ export function lowStock(){
     `;
 }
 
+export async function getTotalStock(productId){
+    const result = await sql`
+        SELECT COALESCE(quantity, 0) AS quantity
+          FROM inventory.v_product_stock
+         WHERE product_id = ${productId}
+    `;
+
+    return result.length ? Number(result[0].quantity) : 0;
+}
 
 /*
     WRITE (FUNCTION ONLY)
@@ -54,7 +65,7 @@ export function adjustStock({
     quantity,
     reference,
     userId
-}) {
+}) {   
     return sql`
         SELECT inventory.adjust_stock(
             ${productId},

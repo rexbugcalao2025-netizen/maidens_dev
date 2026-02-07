@@ -2,7 +2,7 @@
 
 
 import express from 'express';
-import * as productCategoryController from '../controllers/productCategory.js';
+import * as productCategoryController from '../controllers/productCategory.controller.js';
 import { verify, verifyAdmin } from '../auth.js'; // Optional: restrict to admin
 
 const router = express.Router();

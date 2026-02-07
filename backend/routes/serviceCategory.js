@@ -1,7 +1,7 @@
 // src/routes/serviceCategory.js
 
 import express from 'express';
-import * as serviceCategoryController from '../controllers/serviceCategory.js';
+import * as serviceCategoryController from '../controllers/serviceCategory.controller.js';
 import { verify, verifyAdmin } from '../auth.js'; // Optional: restrict to admin
 
 const router = express.Router();

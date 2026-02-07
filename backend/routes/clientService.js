@@ -1,7 +1,7 @@
 // src/routes/clientService.js
 
 import express from 'express';
-import * as clientServiceController from '../controllers/clientService.js';
+import * as clientServiceController from '../controllers/clientService.controller.js';
 import { verify, verifyAdmin } from '../auth.js';
 
 const router = express.Router();

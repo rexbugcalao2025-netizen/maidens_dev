@@ -1,26 +1,36 @@
 // src/controllers/product.js
 
 import Product from '../models/Product.js';
+import { syncInventoryProductFromMongo, hasStock } from '../src/services/inventoryProduct.service.js';
 
 /**
  * Create Product
  */
 export async function createProduct(req, res) {
   try {
-    const { name, description, price, category, sub_category } = req.body;
+    const { name, description, price, category, sub_category, category_id, sub_category_id } = req.body;
 
-    if (!name || price === undefined || !category) {
+    if (!name || price === undefined || !category_id) {
       return res.status(400).json({ message: 'Name, price, and category are required' });
     }
+
+    // // DEBUG
+    // console.log(req.body);
+    // return;
 
     const product = await Product.create({
       name,
       description,
       price,
       price_history: [{ price }],
+      category_id,
       category,
+      sub_category_id,
       sub_category
     });
+
+    // 🔄 Sync to inventory DB
+    await syncInventoryProductFromMongo(product);
 
     res.status(201).json({
       message: 'Product created successfully',
@@ -101,7 +111,14 @@ export async function updateProduct(req, res) {
       product.sub_category = updates.sub_category;
     }
 
+    // DEBUG
+    console.log(product);
+    return;
+
     await product.save();
+
+    // 🔄 Sync updated fields to inventory
+    await syncFromMongo(product);
 
     res.json({ message: 'Product updated', product });
 
@@ -180,8 +197,20 @@ export async function getProductsById(req, res) {
 export async function deleteProduct(req, res) {
   try {
     const { id } = req.params;
+
+    // 🚫 BLOCK deletion if stock exists
+    const stockExists = await hasStock(id);
+    if (stockExists){
+      return res.status(409).json({
+        message: 'Cannot delete product with existing inventory stock'
+      });
+    }
+
     const product = await Product.findByIdAndUpdate(id, { is_deleted: true }, { new: true });
     if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    // 🔄 Reflect inactive status in inventory
+    await syncInventoryProductFromMongo(product);
 
     res.json({ message: 'Product deleted successfully', product });
   } catch (err) {

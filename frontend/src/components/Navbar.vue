@@ -1,3 +1,5 @@
+<!-- src/components/Navbar.vue -->
+ 
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
@@ -196,6 +198,47 @@ const logout = () => {
 
                 <li><hr class="dropdown-divider" /></li>
 
+                <!-- Transactions -->
+                <li>
+                  <router-link class="dropdown-item" to="/admin/client-orders">
+                    <i class="bi bi-receipt-cutoff me-2"></i>
+                    Client Orders
+                  </router-link>
+                </li>
+
+                <li>
+                  <router-link class="dropdown-item" to="/admin/client-services">
+                    <i class="bi bi-clipboard-check me-2"></i>
+                    Client Services
+                  </router-link>
+                </li>
+
+                <li><hr class="dropdown-divider" /></li>               
+
+                <li>
+                  <router-link class="dropdown-item" to="/admin/products">
+                    <i class="bi bi-box me-2"></i>
+                    Products
+                  </router-link>
+                </li>
+                
+                <!-- ✅ PRODUCT CATEGORIES -->
+                <li>
+                  <router-link class="dropdown-item" to="/admin/categories">
+                    <i class="bi bi-tags me-2"></i>
+                    Product Categories
+                  </router-link>
+                </li>
+
+                <li>
+                  <router-link class="dropdown-item" to="/admin/inventory">
+                    <i class="bi bi-box-seam me-2"></i>
+                    Product Inventory
+                  </router-link>
+                </li>
+
+                <li><hr class="dropdown-divider" /></li>
+
                 <!-- Catalog / Services -->
                 <li>
                   <router-link class="dropdown-item" to="/admin/services">
@@ -211,38 +254,7 @@ const logout = () => {
                     Service Categories
                   </router-link>
                 </li>
-
-                <li>
-                  <router-link class="dropdown-item" to="/admin/products">
-                    <i class="bi bi-box-seam me-2"></i>
-                    Products
-                  </router-link>
-                </li>
-
-                <!-- ✅ PRODUCT CATEGORIES -->
-                <li>
-                  <router-link class="dropdown-item" to="/admin/categories">
-                    <i class="bi bi-tags me-2"></i>
-                    Product Categories
-                  </router-link>
-                </li>
-
-                <li><hr class="dropdown-divider" /></li>
-
-                <!-- Transactions -->
-                <li>
-                  <router-link class="dropdown-item" to="/admin/client-orders">
-                    <i class="bi bi-receipt-cutoff me-2"></i>
-                    Client Orders
-                  </router-link>
-                </li>
-
-                <li>
-                  <router-link class="dropdown-item" to="/admin/client-services">
-                    <i class="bi bi-clipboard-check me-2"></i>
-                    Client Services
-                  </router-link>
-                </li>
+                
               </ul>
             </li>
 

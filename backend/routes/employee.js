@@ -1,7 +1,7 @@
 // src/routes/employee.js
 
 import express from 'express';
-import * as employeeController from '../controllers/employee.js';
+import * as employeeController from '../controllers/employee.controller.js';
 import { verify, verifyAdmin } from '../auth.js'; // destructured
 
 const router = express.Router();

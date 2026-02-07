@@ -1,7 +1,7 @@
 // src/routes/product.js
 
 import express from 'express';
-import * as productController from '../controllers/product.js';
+import * as productController from '../controllers/product.controller.js';
 import { verify, verifyAdmin } from '../auth.js';
 
 const router = express.Router();

@@ -1,3 +1,5 @@
+<!-- src/pages/admin/products/ProductForm.vue -->
+
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -13,8 +15,8 @@ const product = ref({
   name: '',
   description: '',
   price: '',
-  category: '',
-  sub_category: ''
+  category: '',  
+  sub_category: ''  
 });
 
 /* CATEGORY DATA */
@@ -72,6 +74,15 @@ const loadSubCategories = async (categoryId) => {
     );
 };
 
+/* GET CATEGORY NAME BY ID */
+function getCategoryNameById(cat, id){
+  return cat.find(c => c._id === id)?.name || null;
+}
+
+// function getSubCategoryNameById(subCategories, id){
+//   return subCategories.find(c => c._id === id)?.name || null;
+// }
+
 /* WATCH CATEGORY CHANGE */
 watch(
   () => product.value.category,
@@ -82,6 +93,8 @@ watch(
     if (!newVal || newVal === oldVal) return;
 
     product.value.sub_category = '';
+    product.value.sub_category_id = '';
+
     await loadSubCategories(newVal);
   }
 );
@@ -90,7 +103,7 @@ watch(
 /* LOAD PRODUCT - EDIT MODE */
 const loadProduct = async () => {
   if (!isEditMode.value) return;
-
+  
   try {
     const res = await api.get(`/products/${route.params.id}`);
     
@@ -112,22 +125,15 @@ const loadProduct = async () => {
     product.value.description = res.data.description;
     product.value.price = res.data.price;
 
-    // 2️⃣ Set category FIRST
-    const category = res.data.category;
-    product.value.category =
-      typeof category === 'string'
-        ? category
-        : category?._id?.toString() || '';
+    // 2️⃣ Set category FIRST    
+    product.value.category = res.data.category_id;    
+    
 
     // 3️⃣ Load sub-categories for that category
     await loadSubCategories(product.value.category);
 
-    // 4️⃣ NOW set sub-category (options already exist)
-    const subCategory = res.data.sub_category;
-    product.value.sub_category =
-      typeof subCategory === 'string'
-        ? subCategory
-        : subCategory?.toString() || '';
+    // 4️⃣ NOW set sub-category (options already exist)    
+    product.value.sub_category = res.data.sub_category_id;          
 
     isInitialized.value = true;
 
@@ -147,6 +153,7 @@ const submitForm = async () => {
       return;
     }    
 
+    
     // if (!newImageUrl.value.startsWith('http')) return;
 
     const newPrice = Number(product.value.price);
@@ -158,9 +165,17 @@ const submitForm = async () => {
     const payload = {
       name: product.value.name,
       description: product.value.description,
-      price: Number(product.value.price),
-      category: product.value.category?.toString(),
-      sub_category: product.value.sub_category?.toString() || null,
+      price: Number(product.value.price),            
+      category: getCategoryNameById(
+        categories.value, 
+        product.value.category?.toString()
+      ),
+      category_id: product.value.category?.toString(),
+      sub_category: getCategoryNameById(
+        subCategories.value, 
+        product.value.sub_category?.toString()
+      ),
+      sub_category_id: product.value.sub_category?.toString() || null,
       images: images.value
     };
 
@@ -183,10 +198,10 @@ const submitForm = async () => {
       const newImages = getNewImages();
 
 
-      // DEBUG
-      console.log('Code passed here: Add new Images');
-      console.log(`/products/${route.params.id}/images`);
-      console.log(newImages);
+      // // DEBUG
+      // console.log('Code passed here: Add new Images');
+      // console.log(`/products/${route.params.id}/images`);
+      // console.log(newImages);
 
       if (newImages.length) {
         await api.put(`/products/${route.params.id}/images`, {

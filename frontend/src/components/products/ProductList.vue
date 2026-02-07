@@ -124,9 +124,9 @@ onMounted(() => { loadProducts(); buildSubCategoryMap(); });
 
       <tbody>
         <tr v-for="product in filteredProducts" :key="product._id">
-          <td>{{ product.name }}</td>
-          <td>{{ product.category?.name || "—" }}</td>
-          <td>{{ subCategoryMap[product.sub_category] || '—' }}</td>
+          <td>{{ product.name }}</td>          
+          <td>{{ product.category || "—" }}</td>          
+          <td>{{ product.sub_category || '—' }}</td>
           <td style="text-align: right;">{{ formatCurrency(product.price) }} Php</td>
           <td class="text-end">
             <button

@@ -44,14 +44,22 @@ const productSchema = new mongoose.Schema(
         trim: true
       }
     ],
-    category: {
+    category_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'ProductCategory',
       required: true
     },
-    sub_category: {
+    category: {
+      type: String,
+      required: true
+    },
+    sub_category_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'ProductCategory'
+    },
+    sub_category: {
+      type: String,
+      default: null
     },
     is_deleted: {
       type: Boolean,

@@ -1,12 +1,15 @@
 CREATE TABLE inventory.products (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id TEXT PRIMARY KEY,
 
   name TEXT NOT NULL,
   description TEXT,
   price NUMERIC(12,2) NOT NULL CHECK (price >= 0),
 
-  category_id UUID,
-  sub_category_id UUID,
+  category_id TEXT,
+  category_name TEXT,
+
+  sub_category_id TEXT,
+  sub_category_name TEXT,  
 
   is_active BOOLEAN DEFAULT TRUE,
   is_deleted BOOLEAN DEFAULT FALSE,
@@ -17,7 +20,7 @@ CREATE TABLE inventory.products (
 
 
 CREATE TABLE inventory.stock_levels (
-  product_id UUID PRIMARY KEY
+  product_id TEXT PRIMARY KEY
     REFERENCES inventory.products(id)
     ON DELETE RESTRICT,
 
@@ -36,7 +39,7 @@ CREATE TYPE inventory.stock_movement_type AS ENUM (
 CREATE TABLE inventory.stock_movements (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-  product_id UUID NOT NULL
+  product_id TEXT NOT NULL
     REFERENCES inventory.products(id)
     ON DELETE RESTRICT,
 
@@ -58,9 +61,9 @@ ON inventory.products(is_deleted, is_active);
 
 
 CREATE OR REPLACE FUNCTION inventory.adjust_stock(
-	p_product_id UUID,
+	p_product_id TEXT,
 	p_movement_type inventory.stock_movement_type,
-	p_quantity INTEGER CHECK (p_quantity <> 0),
+	p_quantity INTEGER,
 	p_reference TEXT DEFAULT NULL
 )
 RETURNS VOID 
@@ -171,7 +174,11 @@ SELECT
 	p.price,
 	s.quantity,
 	p.is_active,
-	p.is_deleted
+	p.is_deleted,
+	p.category_id,
+	p.category_name,
+	p.sub_category_id,
+	p.sub_category_name
 FROM inventory.products p
 JOIN inventory.stock_levels s
   ON s.product_id = p.id
@@ -233,3 +240,124 @@ FROM app_user;
 GRANT SELECT ON inventory.v_low_stock TO app_user;
 GRANT SELECT ON inventory.v_product_stock TO app_user;
 GRANT SELECT ON inventory.v_stock_movements TO app_user;
+
+
+REVOKE ALL ON inventory.stock_levels FROM PUBLIC;
+REVOKE ALL ON inventory.stock_movements FROM PUBLIC;
+
+GRANT SELECT ON inventory.stock_levels TO app_user;
+GRANT SELECT ON inventory.stock_movements TO app_user;
+
+
+-- Only the function mutates stock
+GRANT EXECUTE ON FUNCTION inventory.adjust_stock(
+	uuid,
+	inventory.stock_movement_type,
+	integer,
+	text
+) TO app_user;
+
+
+
+CREATE INDEX idx_products_category_name
+ON inventory.products(category_name)
+
+CREATE INDEX idx_products_sub_category_name
+ON inventory.products(sub_category_name)
+
+
+CREATE OR REPLACE FUNCTION inventory.upsert_product(
+	p_id TEXT,
+	p_name TEXT,
+	p_description TEXT,
+	p_price NUMERIC,
+	p_category_id TEXT,
+	p_category_name TEXT,
+	p_sub_category_id TEXT,
+	p_sub_category_name TEXT,
+	p_sku TEXT,
+	p_unit TEXT,
+	p_is_active BOOLEAN,
+	p_is_deleted BOOLEAN
+)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+	INSERT INTO inventory.products (
+		id, name, description, price,
+		category_id, category_name, sub_category_id, sub_category_name,
+		sku, unit, is_active, is_deleted
+	)
+	VALUES (
+		p_id, 
+		p_name, 
+		p_description, 
+		p_price,
+		p_category_id, 
+		p_category_name, 
+		p_sub_category_id, 
+		p_sub_category_name,
+		p_sku, 
+		p_unit, 
+		p_is_active, 
+		p_is_deleted
+	)
+	ON CONFLICT (id) DO UPDATE SET
+	name = EXCLUDED.name,
+	description = EXCLUDED.description,
+	price = EXCLUDED.price,
+	category_id = EXCLUDED.category_id,
+	category_name = EXCLUDED.category_name,
+	sub_category_id = EXCLUDED.sub_category_id,
+	sub_category_name = EXCLUDED.sub_category_name,
+	sku = EXCLUDED.sku,
+	unit = EXCLUDED.unit,
+	is_active = EXCLUDED.is_active,
+	is_deleted = EXCLUDED.is_deleted,
+	updated_at = NOW();
+	
+	-- ENSURE STOCK ROW EXISTS
+	INSERT INTO inventory.stock_levels (product_id, quantity)
+	VALUES (p_id, 0)
+	ON CONFLICT (product_id) DO NOTHING;
+
+END;
+
+$$;
+
+
+
+
+CREATE OR REPLACE FUNCTION inventory.prevent_delete_if_stock()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+	v_qty INTEGER;
+BEGIN
+	SELECT quantity INTO v_qty
+	  FROM inventory.stock_levels
+	 WHERE product_id = OLD.id;
+
+	 IF COALESCE(v_qty, 0) > 0 THEN
+	 	RAISE EXCEPTION
+		 'Cannot delete product %, stock still exists (% units)',
+		 OLD.id, v_qty;
+	 END IF;
+
+	 RETURN OLD;
+END;
+
+$$;
+
+CREATE TRIGGER trg_prevent_product_delete
+BEFORE UPDATE OF is_deleted ON inventory.products
+FOR EACH ROW
+WHEN (NEW.is_deleted = true)
+EXECUTE FUNCTION inventory.prevent_delete_if_stock();
+
+
+GRANT EXECUTE ON FUNCTION inventory.upsert_product TO app_user;
+GRANT EXECUTE ON FUNCTION inventory.adjust_stock TO app_user;

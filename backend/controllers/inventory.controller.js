@@ -1,7 +1,8 @@
 // No SQL. No Business Rules. Just orchistration + error forwarding.
 // src/controllers/inventory.controller.js
+// /api/inventory/*
 
-import * as inventoryService from '../services/inventory.service.js';
+import * as inventoryService from '../src/services/inventory.service.js';
 
 
 /*
@@ -76,15 +77,12 @@ export async function adjustStock(req, res, next){
 }
 
 export async function consumeStock(req, res, next){
-    try {
-
-        // DEBUG
-        console.log(req.body);
+    try { 
         
-        const { productId, quantity, referenceType, referenceId } = req.body;
+        const { productId, quantity, reference, referenceId } = req.body;
 
         await inventoryService.consumeStock({
-            productId, quantity, referenceType, referenceId }, 
+            productId, quantity, reference, referenceId }, 
             req.user
         );
 

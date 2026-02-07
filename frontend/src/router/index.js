@@ -1,3 +1,5 @@
+// src/router/index.js
+
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
@@ -132,6 +134,12 @@ const routes = [
       {
         path: 'client-services',
         component: () => import('../pages/admin/ClientServicesPage.vue')
+      },
+      {
+        path: 'inventory',
+        name: 'Inventory',
+        component: () => import('@/modules/inventory/pages/InventoryPage.vue'),
+        meta: { requiresAuth: true,  requiresAdmin: true}
       }
     ]
   }

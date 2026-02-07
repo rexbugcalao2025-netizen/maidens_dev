@@ -1,7 +1,7 @@
 // src/routes/cluient.js
 
 import express from 'express';
-import * as clientController from '../controllers/client.js';
+import * as clientController from '../controllers/client.controller.js';
 import { verify, verifyAdmin } from '../auth.js';
 
 const router = express.Router();

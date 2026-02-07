@@ -1,7 +1,7 @@
 // src/routes/order.js
 
 import express from 'express';
-import * as orderController from '../controllers/order.js';
+import * as orderController from '../controllers/order.controller.js';
 import { verify, verifyAdmin } from '../auth.js';
 
 const router = express.Router();

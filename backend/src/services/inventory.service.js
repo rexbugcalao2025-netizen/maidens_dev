@@ -1,4 +1,5 @@
 // src/services/inventory.service.js
+// adjust, consume, validate
 
 import * as inventoryRepo from '../repositories/inventory.repo.js';
 
@@ -34,7 +35,7 @@ export async function lowStock(){
 
 export async function adjustStock(data, user) {
     const { productId, type, quantity, reference } = data;
-
+ 
     // --- validation ---
     if (!productId){
         throw new Error('Product ID is required');
@@ -64,7 +65,7 @@ export async function adjustStock(data, user) {
 }
 
 export async function consumeStock(data, user){
-    const { productId, quantity, referenceType, referenceId } = data;
+    const { productId, quantity, reference, referenceId } = data;
 
     // --- validation ---
     if (!productId){
@@ -75,7 +76,7 @@ export async function consumeStock(data, user){
         throw new Error('Quantity must be positive integer');
     }
 
-    if (!referenceType || !referenceId) {
+    if (!reference || !referenceId) {
         throw new Error('Reference type and ID are required')
     }
 
@@ -87,7 +88,7 @@ export async function consumeStock(data, user){
         productId,
         type: 'OUT',
         quantity,
-        reference: `${referenceType}:${referenceId}`,
+        reference: `${reference}:${referenceId}`,
         userId: user?.id
     });
 }
