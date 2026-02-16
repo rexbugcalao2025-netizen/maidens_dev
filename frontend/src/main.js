@@ -56,7 +56,11 @@ window.addEventListener('storage', (event) => {
 })
 
 
+
 // 🔥 Restore login here
 auth.restoreSession();  
 
+
+// // 🔴 TEMP DEBUG LINE
+// window.__router = router
 app.mount('#app');

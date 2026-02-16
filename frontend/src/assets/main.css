@@ -29,3 +29,18 @@
 .modal.show {
   pointer-events: auto;
 }
+
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+.login-card h2 {
+  color: #8b5cf6;
+  font-weight: 600;
+}
+
+.login-card {
+  backdrop-filter: blur(6px);
+  background-color: rgba(255, 255, 255, 0.85);
+}

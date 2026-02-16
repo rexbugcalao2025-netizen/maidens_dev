@@ -8,16 +8,19 @@ import HomePage from '../pages/HomePage.vue';
 import LoginPage from '../pages/LoginPage.vue';
 import RegisterPage from '../pages/RegisterPage.vue';
 
-// Admin pages
+// Admin pages (static imports where already used)
 import ProductCategoryPage from '../pages/admin/product-categories/ProductCategoryPage.vue';
 import ServiceCategoryPage from '../pages/admin/service-categories/ServiceCategoryPage.vue';
-import CreateServicePage from '@/pages/admin/services/CreateService.vue'
-import ServicesListPage from  '@/pages/admin/services/ServicesList.vue';
+import CreateServicePage from '@/pages/admin/services/CreateService.vue';
+import ServicesListPage from '@/pages/admin/services/ServicesList.vue';
 import ViewServicePage from '@/pages/admin/services/ViewService.vue';
 import EditServicePage from '@/pages/admin/services/EditService.vue';
-
+import CreateNewCustomerServicePage from '@/pages/admin/NewClientServicePage.vue';
 
 const routes = [
+  // =====================
+  // PUBLIC ROUTES
+  // =====================
   {
     path: '/',
     name: 'home',
@@ -40,93 +43,114 @@ const routes = [
     meta: { requiresAuth: true }
   },
 
+  // =====================
   // ADMIN ROUTES
+  // =====================
   {
     path: '/admin',
     component: () => import('../layouts/AdminLayout.vue'),
     meta: { requiresAuth: true, requiresAdmin: true },
     children: [
+      // Dashboard
       {
         path: '',
         name: 'admin-dashboard',
         component: () => import('../pages/admin/DashboardPage.vue')
       },
+
+      // Users
       {
         path: 'users',
         component: () => import('../pages/admin/UsersPage.vue')
-      },      
+      },
       {
         path: 'users/:id',
         component: () => import('../pages/admin/UserDetailsPage.vue')
       },
+
+      // Clients
       {
         path: 'clients',
         component: () => import('../pages/admin/ClientsPage.vue')
       },
+
+      // Employees
       {
         path: 'employees',
         component: () => import('../pages/admin/EmployeesPage.vue')
-      },            
+      },
       {
         path: 'employees/create/:userId',
         name: 'admin-create-employee',
-        component: () => import('../pages/admin/CreateEmployeePage.vue')        
+        component: () => import('../pages/admin/CreateEmployeePage.vue')
       },
       {
         path: 'employees/:id',
         name: 'admin-employee-details',
         component: () => import('../pages/admin/EmployeeDetailsPage.vue')
-      },      
+      },
+
+      // =====================
+      // SERVICES (FIXED)
+      // =====================
       {
         path: 'services',
-        component: () => import('../pages/admin/services/ServicesList.vue')
-      },
-      {
-        path: "/admin/services/create",
-        name: "CreateService",
-        component: CreateServicePage
-      },
-      {
-        path: '/admin/services',
         name: 'AdminServices',
         component: ServicesListPage
       },
       {
-        path: '/admin/services/:id',
+        path: 'services/new',
+        name: 'AdminNewClientService',                
+        component: CreateNewCustomerServicePage,
+        meta: { requiresAuth: true, requiresAdmin: true }
+      },
+      {
+        path: 'services/create',
+        name: 'CreateService',
+        component: CreateServicePage
+      },
+      {
+        path: 'services/:id',
         name: 'ViewService',
         component: ViewServicePage,
         props: true
       },
       {
-        path: '/admin/services/:serviceId/edit',
+        path: 'services/:serviceId/edit',
         name: 'EditService',
         component: EditServicePage,
         props: true
       },
+
+      // Service Categories
       {
-          path: 'service-categories',
-          name: 'AdminServiceCategories',
-          component: ServiceCategoryPage,
-          meta: { requiresAuth: true, requiresAdmin: true }
+        path: 'service-categories',
+        name: 'AdminServiceCategories',
+        component: ServiceCategoryPage
       },
+
+      // Products
       {
         path: 'products',
         component: () => import('../pages/admin/ProductsPage.vue')
-      },      
-      {
-      path: 'products/new',
-      component: () => import('../pages/admin/products/ProductForm.vue')
       },
       {
-      path: 'products/:id',
-      component: () => import('../pages/admin/products/ProductForm.vue')
+        path: 'products/new',
+        component: () => import('../pages/admin/products/ProductForm.vue')
       },
       {
-          path: 'categories',
-          name: 'AdminCategories',
-          component: ProductCategoryPage,
-          meta: { requiresAuth: true, requiresAdmin: true }
+        path: 'products/:id',
+        component: () => import('../pages/admin/products/ProductForm.vue')
       },
+
+      // Product Categories
+      {
+        path: 'categories',
+        name: 'AdminCategories',
+        component: ProductCategoryPage
+      },
+
+      // Client Orders / Services
       {
         path: 'client-orders',
         component: () => import('../pages/admin/ClientOrdersPage.vue')
@@ -135,11 +159,12 @@ const routes = [
         path: 'client-services',
         component: () => import('../pages/admin/ClientServicesPage.vue')
       },
+
+      // Inventory
       {
         path: 'inventory',
         name: 'Inventory',
-        component: () => import('@/modules/inventory/pages/InventoryPage.vue'),
-        meta: { requiresAuth: true,  requiresAdmin: true}
+        component: () => import('@/modules/inventory/pages/InventoryPage.vue')
       }
     ]
   }
@@ -150,17 +175,36 @@ const router = createRouter({
   routes
 })
 
-/* ROUTE GUARDS */
+// =====================
+// ROUTE GUARDS
+// =====================
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore()
 
-  if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    return next('/login')
+  const requiresAuth = to.matched.some(
+    record => record.meta.requiresAuth
+  );
+
+  const requiresAdmin = to.matched.some(
+    record => record.meta.requiresAdmin
+  );
+
+
+  if (requiresAuth && !auth.isAuthenticated){
+    return next('/login');
   }
 
-  if (to.meta.requiresAdmin && auth.role !== 'admin') {
-    return next('/')
+  if (requiresAdmin && auth.role !== 'admin'){
+    return next('/');
   }
+
+  // if (to.meta.requiresAuth && !auth.isAuthenticated) {
+  //   return next('/login')
+  // }
+
+  // if (to.meta.requiresAdmin && auth.role !== 'admin') {
+  //   return next('/')
+  // }
 
   next()
 })

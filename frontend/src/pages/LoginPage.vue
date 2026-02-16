@@ -67,59 +67,95 @@ const forgotPassword = () => {
 </script>
 
 <template>
-  <div class="container mt-5 pt-5" style="max-width: 420px;">
-    <h2 class="mb-3">Login</h2>
+  <div class="login-bg">
+    <div class="login-overlay d-flex align-items-center justify-content-center">
+    
+      
+      <!-- Login Card -->
+      <div class="card shadow-lg login-card">
+        <div class="card-body p-4">
+          <h2 class="mb-3 text-center">Login</h2>
 
-    <div v-if="error" class="alert alert-danger">
-      {{ error }}
-    </div>
+          <div v-if="error" class="alert alert-danger">
+            {{ error }}
+          </div>
 
-    <form @submit.prevent="submit" novalidate>
+          <form @submit.prevent="submit" novalidate>
 
-      <!-- EMAIL -->
-      <div class="mb-3">
-        <label class="form-label">Email</label>
-        <input
-          v-model="form.email"
-          type="email"
-          class="form-control"
-          :class="{ 'is-invalid': form.email && !isEmailValid }"
-          required
-        />
-        <div class="invalid-feedback">
-          Please enter a valid email
+            <!-- EMAIL -->
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input
+                v-model="form.email"
+                type="email"
+                class="form-control"
+                :class="{ 'is-invalid': form.email && !isEmailValid }"
+                required
+              />
+              <div class="invalid-feedback">
+                Please enter a valid email
+              </div>
+            </div>
+
+            <!-- PASSWORD -->
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input
+                v-model="form.password"
+                type="password"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <!-- Forgot Password -->
+            <div class="text-end mb-3">
+              <a
+                href="#"
+                class="small text-muted"
+                @click.prevent="forgotPassword"
+              >
+                Forgot password?
+              </a>
+            </div>
+
+            <button
+              class="btn btn-primary w-100"
+              :disabled="!canSubmit"
+            >
+              {{ submitting ? 'Logging in...' : 'Login' }}
+            </button>
+
+          </form>
         </div>
       </div>
 
-      <!-- PASSWORD -->
-      <div class="mb-3">
-        <label class="form-label">Password</label>
-        <input
-          v-model="form.password"
-          type="password"
-          class="form-control"
-          required
-        />
-      </div>
-
-      <!-- Forgot Password -->
-      <div class="text-end mb-3">
-        <a
-          href="#"
-          class="small text-primary text-muted"
-          @click.prevent="forgotPassword"
-        >
-          Forgot password?
-        </a>
-      </div>
-
-      <button
-        class="btn btn-primary w-100"
-        :disabled="!canSubmit"
-      >
-        {{ submitting ? 'Logging in...' : 'Login' }}
-      </button>
-
-    </form>
+    </div>
   </div>
 </template>
+
+<style scoped>
+.login-bg {
+  min-height: 100vh;
+  width: 100vw;
+
+  background-image: url('@/assets/backgrounds/fourmaidens-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.login-overlay {
+  min-height: 100vh;
+  width: 100%;
+
+  /* background: rgba(249, 250, 251, 0.92); same overlay as dashboard */
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 1.25rem;
+}
+
+</style>
